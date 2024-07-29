@@ -339,6 +339,7 @@ def load_chat_screen(assistant_id, assistant_title):
         uploaded_file = None
 
     st.title(assistant_title if assistant_title else "")
+    st.write(f"Welcome, {st.session_state['username']}!")
     user_msg = st.chat_input(
         "Message", on_submit=disable_form, disabled=st.session_state.in_progress
     )
@@ -379,9 +380,6 @@ def login():
 
 
 def main():
-    st.title("💬 RevoU AI Coach")
-    st.caption("🚀 AI for your job seeking journey")
-
     # Initialize session state
     if 'logged_in' not in st.session_state:
         st.session_state['logged_in'] = False
@@ -403,8 +401,6 @@ def main():
     if not st.session_state['logged_in']:
         login()
     else:
-        st.write(f"Welcome, {st.session_state['username']}!")
-        
         # Check if multi-agent settings are defined
         multi_agents = os.environ.get("OPENAI_ASSISTANTS", None)
         single_agent_id = os.environ.get("ASSISTANT_ID", None)
