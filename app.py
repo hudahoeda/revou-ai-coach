@@ -339,7 +339,7 @@ def load_chat_screen(assistant_id, assistant_title):
         uploaded_file = None
 
     st.title(assistant_title if assistant_title else "")
-    st.write(f"Welcome, {st.session_state['username']}!")
+    st.write(f"Halo, {st.session_state['username']}! Adakah yang bisa aku bantu?")
     user_msg = st.chat_input(
         "Message", on_submit=disable_form, disabled=st.session_state.in_progress
     )
@@ -360,6 +360,8 @@ def load_chat_screen(assistant_id, assistant_title):
     render_chat()
 
 def login():
+    st.title("💬 RevoU AI Coach : AI for your job seeking journey 🚀")
+    st.title("Enter your credential")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     if st.button("Login"):
