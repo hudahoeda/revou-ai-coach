@@ -324,12 +324,8 @@ def load_chat_screen(assistant_id, assistant_title):
             type=[
                 "txt",
                 "pdf",
-                "png",
-                "jpg",
-                "jpeg",
                 "csv",
                 "json",
-                "geojson",
                 "xlsx",
                 "xls",
             ],
@@ -339,7 +335,7 @@ def load_chat_screen(assistant_id, assistant_title):
         uploaded_file = None
 
     st.title(assistant_title if assistant_title else "")
-    st.write(f"Halo, {st.session_state['username']}! Adakah yang bisa aku bantu?")
+    st.write(f"Halo, bisa perkenalkan namamu?")
     user_msg = st.chat_input(
         "Message", on_submit=disable_form, disabled=st.session_state.in_progress
     )
@@ -360,7 +356,7 @@ def load_chat_screen(assistant_id, assistant_title):
     render_chat()
 
 def login():
-    st.title("💬 RevoU AI Coach : AI for your job seeking journey 🚀")
+    st.title("💬 RevoU AI Coach")
     st.text("Enter your credential")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
@@ -397,6 +393,7 @@ def main():
             st.session_state.pop('username', None)
             st.session_state['chat_history'] = []
             st.success("Logged out successfully!")
+            reset_chat()
             st.rerun()
 
     # Main content
