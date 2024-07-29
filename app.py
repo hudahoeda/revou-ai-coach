@@ -361,7 +361,7 @@ def load_chat_screen(assistant_id, assistant_title):
 
 def login():
     st.title("💬 RevoU AI Coach : AI for your job seeking journey 🚀")
-    st.title("Enter your credential")
+    st.text("Enter your credential")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     if st.button("Login"):
