@@ -10,6 +10,22 @@ from tools import TOOL_MAP
 from typing_extensions import override
 from dotenv import load_dotenv
 import streamlit_authenticator as stauth
+from pyairtable import Api
+import time
+import uuid
+
+# Add these to your existing environment variable loading
+BASE_ID = os.environ.get('BASE_ID')
+USER_TABLE_NAME = 'Users'
+CHAT_TABLE_NAME = 'Chat History'
+AIRTABLE_API_KEY = os.environ.get('AIRTABLE_API_KEY')
+
+# Initialize Airtable API
+try:
+    airtable = Api(AIRTABLE_API_KEY)
+except Exception as e:
+    st.error(f"Error initializing Airtable API: {str(e)}")
+    st.stop()
 
 load_dotenv()
 
@@ -156,6 +172,47 @@ class EventHandler(AssistantEventHandler):
             ) as stream:
                 stream.until_done()
 
+def generate_session_id():
+    return str(uuid.uuid4())
+
+def get_user(username):
+    try:
+        table = airtable.table(BASE_ID, USER_TABLE_NAME)
+        records = table.all(formula=f"{{Username}} = '{username}'")
+        return records[0] if records else None
+    except Exception as e:
+        st.error(f"Error getting user: {str(e)}")
+        return None
+
+def get_student_id(username):
+    try:
+        table = airtable.table(BASE_ID, USER_TABLE_NAME)
+        records = table.all(formula=f"{{Username}} = '{username}'")
+        if records:
+            return records[0]['fields'].get('StudentID')
+        else:
+            return None
+    except Exception as e:
+        st.error(f"Error getting user: {str(e)}")
+        return None
+
+def verify_password(stored_password, provided_password):
+    return stored_password == provided_password
+
+def save_chat_history(session_id, username, student_id, user_input, response):
+    try:
+        table = airtable.table(BASE_ID, CHAT_TABLE_NAME)
+        table.create({
+            "SessionID": session_id,
+            "Timestamp": int(time.time()),
+            "StudentID": student_id,
+            "Username": username,
+            "UserInput": user_input,
+            "Response": response
+        })
+    except Exception as e:
+        st.error(f"Error saving chat history: {str(e)}")
+
 
 def create_thread(content, file):
     return client.beta.threads.create()
@@ -211,6 +268,16 @@ def run_stream(user_input, file, selected_assistant_id):
         event_handler=EventHandler(),
     ) as stream:
         stream.until_done()
+    
+    # Save chat history after the stream is complete
+    last_assistant_message = client.beta.threads.messages.list(thread_id=st.session_state.thread.id).data[0]
+    save_chat_history(
+        st.session_state['session_id'],
+        st.session_state['username'],
+        get_student_id(st.session_state['username']),
+        user_input,
+        last_assistant_message.content[0].text.value
+    )
 
 
 def handle_uploaded_file(uploaded_file):
@@ -291,44 +358,77 @@ def load_chat_screen(assistant_id, assistant_title):
 
     render_chat()
 
+def login():
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    if st.button("Login"):
+        user = get_user(username)
+        if user:
+            if 'Password' in user['fields']:
+                if verify_password(user['fields']['Password'], password):
+                    st.session_state['logged_in'] = True
+                    st.session_state['username'] = username
+                    st.success("Login successful!")
+                    st.rerun()
+                else:
+                    st.error("Invalid password")
+            else:
+                st.error("User record does not contain a password field")
+        else:
+            st.error("User not found")
+
 
 def main():
-    # Check if multi-agent settings are defined
-    multi_agents = os.environ.get("OPENAI_ASSISTANTS", None)
-    single_agent_id = os.environ.get("ASSISTANT_ID", None)
-    single_agent_title = os.environ.get("ASSISTANT_TITLE", "Assistants API UI")
+    st.title("💬 RevoU AI Coach")
+    st.caption("🚀 AI for your job seeking journey")
 
-    if (
-        authentication_required
-        and "credentials" in st.secrets
-        and authenticator is not None
-    ):
-        authenticator.login()
-        if not st.session_state["authentication_status"]:
-            login()
-            return
-        else:
-            authenticator.logout(location="sidebar")
+    # Initialize session state
+    if 'logged_in' not in st.session_state:
+        st.session_state['logged_in'] = False
+    if 'chat_history' not in st.session_state:
+        st.session_state['chat_history'] = []
+    if 'session_id' not in st.session_state:
+        st.session_state['session_id'] = generate_session_id()
 
-    if multi_agents:
-        assistants_json = json.loads(multi_agents)
-        assistants_object = {f'{obj["title"]}': obj for obj in assistants_json}
-        selected_assistant = st.sidebar.selectbox(
-            "Select an assistant profile?",
-            list(assistants_object.keys()),
-            index=None,
-            placeholder="Select an assistant profile...",
-            on_change=reset_chat,  # Call the reset function on change
-        )
-        if selected_assistant:
-            load_chat_screen(
-                assistants_object[selected_assistant]["id"],
-                assistants_object[selected_assistant]["title"],
-            )
-    elif single_agent_id:
-        load_chat_screen(single_agent_id, single_agent_title)
+    # Sidebar for logout
+    if st.session_state['logged_in']:
+        if st.sidebar.button("Logout"):
+            st.session_state['logged_in'] = False
+            st.session_state.pop('username', None)
+            st.session_state['chat_history'] = []
+            st.success("Logged out successfully!")
+            st.rerun()
+
+    # Main content
+    if not st.session_state['logged_in']:
+        login()
     else:
-        st.error("No assistant configurations defined in environment variables.")
+        st.write(f"Welcome, {st.session_state['username']}!")
+        
+        # Check if multi-agent settings are defined
+        multi_agents = os.environ.get("OPENAI_ASSISTANTS", None)
+        single_agent_id = os.environ.get("ASSISTANT_ID", None)
+        single_agent_title = os.environ.get("ASSISTANT_TITLE", "Assistants API UI")
+
+        if multi_agents:
+            assistants_json = json.loads(multi_agents)
+            assistants_object = {f'{obj["title"]}': obj for obj in assistants_json}
+            selected_assistant = st.sidebar.selectbox(
+                "Select an assistant profile?",
+                list(assistants_object.keys()),
+                index=None,
+                placeholder="Select an assistant profile...",
+                on_change=reset_chat,
+            )
+            if selected_assistant:
+                load_chat_screen(
+                    assistants_object[selected_assistant]["id"],
+                    assistants_object[selected_assistant]["title"],
+                )
+        elif single_agent_id:
+            load_chat_screen(single_agent_id, single_agent_title)
+        else:
+            st.error("No assistant configurations defined in environment variables.")
 
 
 if __name__ == "__main__":
