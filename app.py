@@ -305,13 +305,6 @@ def disable_form():
     st.session_state.in_progress = True
 
 
-def login():
-    if st.session_state["authentication_status"] is False:
-        st.error("Username/password is incorrect")
-    elif st.session_state["authentication_status"] is None:
-        st.warning("Please enter your username and password")
-
-
 def reset_chat():
     st.session_state.chat_log = []
     st.session_state.in_progress = False
@@ -378,6 +371,19 @@ def login():
 
 
 def main():
+    st.markdown(
+    """
+    <style>
+    .css-1jc7ptx, .e1ewe7hr3, .viewerBadge_container__1QSob,
+    .styles_viewerBadge__1yB5_, .viewerBadge_link__1S137,
+    .viewerBadge_text__1JaDK {
+        display: none;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+    )
+
     # Initialize session state
     if 'logged_in' not in st.session_state:
         st.session_state['logged_in'] = False
