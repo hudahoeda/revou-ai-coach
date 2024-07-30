@@ -317,10 +317,7 @@ def load_chat_screen(assistant_id, assistant_title):
             type=[
                 "txt",
                 "pdf",
-                "csv",
                 "json",
-                "xlsx",
-                "xls",
             ],
             disabled=st.session_state.in_progress,
         )
