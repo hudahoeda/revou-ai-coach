@@ -346,18 +346,18 @@ def load_chat_screen(assistant_id, assistant_title):
     render_chat()
 
 def login():
-    # st.markdown(
-    # """
-    # <style>
-    # .css-1jc7ptx, .e1ewe7hr3, .viewerBadge_container__1QSob,
-    # .styles_viewerBadge__1yB5_, .viewerBadge_link__1S137,
-    # .viewerBadge_text__1JaDK {
-    #     display: none;
-    # }
-    # </style>
-    # """,
-    # unsafe_allow_html=True
-    # )
+    st.markdown(
+    """
+    <style>
+    .css-1jc7ptx, .e1ewe7hr3, .viewerBadge_container__1QSob,
+    .styles_viewerBadge__1yB5_, .viewerBadge_link__1S137,
+    .viewerBadge_text__1JaDK {
+        display: none;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+    )
     st.title("💬 RevoU AI Coach")
     st.text("Enter your credential")
     username = st.text_input("Username")
@@ -380,18 +380,18 @@ def login():
 
 
 def main():
-    # st.markdown(
-    # """
-    # <style>
-    # .css-1jc7ptx, .e1ewe7hr3, .viewerBadge_container__1QSob,
-    # .styles_viewerBadge__1yB5_, .viewerBadge_link__1S137,
-    # .viewerBadge_text__1JaDK {
-    #     display: none;
-    # }
-    # </style>
-    # """,
-    # unsafe_allow_html=True
-    # )
+    st.markdown(
+    """
+    <style>
+    .css-1jc7ptx, .e1ewe7hr3, .viewerBadge_container__1QSob,
+    .styles_viewerBadge__1yB5_, .viewerBadge_link__1S137,
+    .viewerBadge_text__1JaDK {
+        display: none;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+    )
 
     # Initialize session state
     if 'logged_in' not in st.session_state:
