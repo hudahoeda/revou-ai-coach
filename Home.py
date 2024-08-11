@@ -456,14 +456,9 @@ def main():
     if not st.session_state['logged_in']:
         login()
     else:
-        st.set_page_config(
-            page_title="Hello",
-            page_icon="👋",
-        )
+        st.write("# Welcome to RevoU AI Coach! 👋")
 
-        st.write("# Welcome to Streamlit! 👋")
-
-        st.sidebar.success("Select a model")
+        st.sidebar.success("Select Coach to chat with")
 
         st.markdown(
             """

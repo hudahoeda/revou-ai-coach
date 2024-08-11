@@ -456,27 +456,9 @@ def main():
     if not st.session_state['logged_in']:
         login()
     else:
-        # Check if multi-agent settings are defined
-        multi_agents = os.environ.get("OPENAI_ASSISTANTS", None)
         single_agent_id = os.environ.get("OPENAI_ASSISTANTS_1", None)
         single_agent_title = os.environ.get("OPENAI_ASSISTANTS_TITLE_1", "Assistants API UI")
-
-        if multi_agents:
-            assistants_json = json.loads(multi_agents)
-            assistants_object = {f'{obj["title"]}': obj for obj in assistants_json}
-            selected_assistant = st.sidebar.selectbox(
-                "Select an assistant profile?",
-                list(assistants_object.keys()),
-                index=None,
-                placeholder="Select an assistant profile...",
-                on_change=reset_chat,
-            )
-            if selected_assistant:
-                load_chat_screen(
-                    assistants_object[selected_assistant]["id"],
-                    assistants_object[selected_assistant]["title"],
-                )
-        elif single_agent_id:
+        if single_agent_id:
             load_chat_screen(single_agent_id, single_agent_title)
         else:
             st.error("No assistant configurations defined in environment variables.")
