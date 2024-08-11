@@ -209,7 +209,7 @@ def get_student_id(username):
 def verify_password(stored_password, provided_password):
     return stored_password == provided_password
 
-def save_chat_history(session_id, username, student_id, user_input, response, model, prompt_tokens, completion_tokens, total_tokens):
+def save_chat_history(session_id, username, student_id, user_input, response, assistant_id, model, prompt_tokens, completion_tokens, total_tokens):
     try:
         table = airtable.table(BASE_ID, CHAT_TABLE_NAME)
         table.create({
@@ -219,6 +219,7 @@ def save_chat_history(session_id, username, student_id, user_input, response, mo
             "Username": username,
             "UserInput": user_input,
             "Response": response,
+            "AssistantID" : assistant_id,
             "Model": model,
             "PromptTokens": prompt_tokens,
             "CompletionTokens": completion_tokens,
@@ -298,6 +299,7 @@ def run_stream(user_input, file, selected_assistant_id):
     #print(run_details)
 
     # Extract the required details from the run object
+    assistant_id = run_details.assistant_id
     model = run_details.model
     prompt_tokens = run_details.usage.prompt_tokens
     completion_tokens = run_details.usage.completion_tokens
@@ -312,6 +314,7 @@ def run_stream(user_input, file, selected_assistant_id):
         get_student_id(st.session_state['username']),
         user_input,
         last_assistant_message.content[0].text.value,
+        assistant_id,
         model,
         prompt_tokens,
         completion_tokens,
