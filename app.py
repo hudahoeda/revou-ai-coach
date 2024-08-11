@@ -68,11 +68,15 @@ if azure_openai_endpoint and azure_openai_key:
 else:
     client = openai.OpenAI(api_key=openai_api_key)
 
-
 class EventHandler(AssistantEventHandler):
+    def __init__(self):
+        super().__init__()
+        self.run_id = None
+
     @override
     def on_event(self, event):
-        pass
+        if hasattr(event, 'run_id') and event.run_id:
+            self.run_id = event.run_id
 
     @override
     def on_text_created(self, text):
@@ -96,6 +100,12 @@ class EventHandler(AssistantEventHandler):
         format_text = format_annotation(text)
         st.session_state.current_markdown.markdown(format_text, True)
         st.session_state.chat_log.append({"name": "assistant", "msg": format_text})
+        # Retrieve run_id from the last assistant message
+        last_message = client.beta.threads.messages.list(
+            thread_id=st.session_state.thread.id, limit=1
+        ).data[0]
+        if last_message.role == "assistant" and last_message.run_id:
+            self.run_id = last_message.run_id
 
     # @override
     # def on_tool_call_created(self, tool_call):
@@ -268,69 +278,45 @@ def run_stream(user_input, file, selected_assistant_id):
     
     create_message(st.session_state.thread, user_input, file)
     
-    run = client.beta.threads.runs.create(
+    event_handler = EventHandler()
+    
+    with client.beta.threads.runs.stream(
         thread_id=st.session_state.thread.id,
-        assistant_id=selected_assistant_id
-    )
+        assistant_id=selected_assistant_id,
+        event_handler=event_handler,
+    ) as stream:
+        stream.until_done()
+
+    # Check if the run_id was captured
+    run_id = event_handler.run_id
+    if not run_id:
+        raise RuntimeError("Failed to retrieve run ID")
+
+    # Fetch the run details using the run_id
+    run_details = client.beta.threads.runs.retrieve(thread_id=st.session_state.thread.id, run_id=run_id)
+
+    #print(run_details)
+
+    # Extract the required details from the run object
+    model = run_details.model
+    prompt_tokens = run_details.usage.prompt_tokens
+    completion_tokens = run_details.usage.completion_tokens
+    total_tokens = run_details.usage.total_tokens
+
+    # Save chat history after the stream is complete
+    last_assistant_message = client.beta.threads.messages.list(thread_id=st.session_state.thread.id).data[0]
     
-    full_response = ""
-    
-    while True:
-        run_status = client.beta.threads.runs.retrieve(
-            thread_id=st.session_state.thread.id,
-            run_id=run.id
-        )
-        if run_status.status == 'completed':
-            break
-        elif run_status.status == 'failed':
-            return "Run failed: " + str(run_status.last_error), None, 0, 0, 0
-        
-        # Retrieve new messages
-        messages = client.beta.threads.messages.list(
-            thread_id=st.session_state.thread.id,
-            order="asc",
-            after=st.session_state.get('last_message_id')
-        )
-        
-        for msg in messages.data:
-            if msg.role == "assistant":
-                # Check if content exists and has the expected structure
-                if msg.content and len(msg.content) > 0 and hasattr(msg.content[0], 'text'):
-                    full_response += msg.content[0].text.value
-                else:
-                    st.warning(f"Unexpected message format: {msg}")
-                st.session_state['last_message_id'] = msg.id
-        
-        time.sleep(0.1)
-    
-    # Retrieve the completed run to get model and token information
-    completed_run = client.beta.threads.runs.retrieve(
-        thread_id=st.session_state.thread.id,
-        run_id=run.id
-    )
-    
-    # Extract the required information
-    model = completed_run.model
-    usage = completed_run.usage
-    prompt_tokens = usage.prompt_tokens if usage else 0
-    completion_tokens = usage.completion_tokens if usage else 0
-    total_tokens = usage.total_tokens if usage else 0
-    
-    # Save chat history with the new information
     save_chat_history(
         st.session_state['session_id'],
         st.session_state['username'],
         get_student_id(st.session_state['username']),
         user_input,
-        full_response,
+        last_assistant_message.content[0].text.value,
         model,
         prompt_tokens,
         completion_tokens,
         total_tokens
     )
-
-    return full_response, model, prompt_tokens, completion_tokens, total_tokens
-
 
 def handle_uploaded_file(uploaded_file):
     file = client.files.create(file=uploaded_file, purpose="assistants")
@@ -363,70 +349,39 @@ def reset_chat():
 
 
 def load_chat_screen(assistant_id, assistant_title):
-    st.title(assistant_title if assistant_title else "")
-    st.write(f"Halo, bisa perkenalkan namamu?")
-
-    # Display chat history
-    for chat in st.session_state.chat_log:
-        with st.chat_message(chat["name"]):
-            st.markdown(chat["msg"])
-            if chat["name"] == "assistant" and "model" in chat:
-                st.caption(f"Model: {chat['model']} | Prompt tokens: {chat['prompt_tokens']} | Completion tokens: {chat['completion_tokens']} | Total tokens: {chat['total_tokens']}")
-
-    # File uploader
     if enabled_file_upload_message:
         uploaded_file = st.sidebar.file_uploader(
             enabled_file_upload_message,
-            type=["txt", "pdf", "json"],
+            type=[
+                "txt",
+                "pdf",
+                "json",
+            ],
             disabled=st.session_state.in_progress,
         )
     else:
         uploaded_file = None
 
-    # Chat input
+    st.title(assistant_title if assistant_title else "")
+    st.write(f"Halo, bisa perkenalkan namamu?")
     user_msg = st.chat_input(
         "Message", on_submit=disable_form, disabled=st.session_state.in_progress
     )
-
     if user_msg:
-        # Display user message
+        render_chat()
         with st.chat_message("user"):
-            st.markdown(user_msg)
+            st.markdown(user_msg, True)
         st.session_state.chat_log.append({"name": "user", "msg": user_msg})
 
-        # Process file if uploaded
         file = None
         if uploaded_file is not None:
             file = handle_uploaded_file(uploaded_file)
-
-        try:
-            # Get assistant response
-            full_response, model, prompt_tokens, completion_tokens, total_tokens = run_stream(user_msg, file, assistant_id)
-            
-            # Display assistant response
-            with st.chat_message("assistant"):
-                st.markdown(full_response)
-                st.caption(f"Model: {model} | Prompt tokens: {prompt_tokens} | Completion tokens: {completion_tokens} | Total tokens: {total_tokens}")
-
-            # Add assistant response to chat log
-            st.session_state.chat_log.append({
-                "name": "assistant", 
-                "msg": full_response,
-                "model": model,
-                "prompt_tokens": prompt_tokens,
-                "completion_tokens": completion_tokens,
-                "total_tokens": total_tokens
-            })
-        except Exception as e:
-            st.error(f"An error occurred: {str(e)}")
-            st.session_state.chat_log.append({
-                "name": "assistant",
-                "msg": f"An error occurred: {str(e)}"
-            })
-
+        run_stream(user_msg, file, assistant_id)
         st.session_state.in_progress = False
         st.session_state.tool_call = None
         st.rerun()
+
+    render_chat()
 
 def login():
     st.markdown(
