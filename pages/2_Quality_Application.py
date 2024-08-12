@@ -68,11 +68,15 @@ if azure_openai_endpoint and azure_openai_key:
 else:
     client = openai.OpenAI(api_key=openai_api_key)
 
-
 class EventHandler(AssistantEventHandler):
+    def __init__(self):
+        super().__init__()
+        self.run_id = None
+
     @override
     def on_event(self, event):
-        pass
+        if hasattr(event, 'run_id') and event.run_id:
+            self.run_id = event.run_id
 
     @override
     def on_text_created(self, text):
@@ -96,81 +100,87 @@ class EventHandler(AssistantEventHandler):
         format_text = format_annotation(text)
         st.session_state.current_markdown.markdown(format_text, True)
         st.session_state.chat_log.append({"name": "assistant", "msg": format_text})
+        # Retrieve run_id from the last assistant message
+        last_message = client.beta.threads.messages.list(
+            thread_id=st.session_state.thread.id, limit=1
+        ).data[0]
+        if last_message.role == "assistant" and last_message.run_id:
+            self.run_id = last_message.run_id
 
-    @override
-    def on_tool_call_created(self, tool_call):
-        if tool_call.type == "code_interpreter":
-            st.session_state.current_tool_input = ""
-            with st.chat_message("Assistant"):
-                st.session_state.current_tool_input_markdown = st.empty()
+    # @override
+    # def on_tool_call_created(self, tool_call):
+    #     if tool_call.type == "code_interpreter":
+    #         st.session_state.current_tool_input = ""
+    #         with st.chat_message("Assistant"):
+    #             st.session_state.current_tool_input_markdown = st.empty()
 
-    @override
-    def on_tool_call_delta(self, delta, snapshot):
-        if 'current_tool_input_markdown' not in st.session_state:
-            with st.chat_message("Assistant"):
-                st.session_state.current_tool_input_markdown = st.empty()
+    # @override
+    # def on_tool_call_delta(self, delta, snapshot):
+    #     if 'current_tool_input_markdown' not in st.session_state:
+    #         with st.chat_message("Assistant"):
+    #             st.session_state.current_tool_input_markdown = st.empty()
 
-        if delta.type == "code_interpreter":
-            if delta.code_interpreter.input:
-                st.session_state.current_tool_input += delta.code_interpreter.input
-                input_code = f"### code interpreter\ninput:\n```python\n{st.session_state.current_tool_input}\n```"
-                st.session_state.current_tool_input_markdown.markdown(input_code, True)
+    #     if delta.type == "code_interpreter":
+    #         if delta.code_interpreter.input:
+    #             st.session_state.current_tool_input += delta.code_interpreter.input
+    #             input_code = f"### code interpreter\ninput:\n```python\n{st.session_state.current_tool_input}\n```"
+    #             st.session_state.current_tool_input_markdown.markdown(input_code, True)
 
-            if delta.code_interpreter.outputs:
-                for output in delta.code_interpreter.outputs:
-                    if output.type == "logs":
-                        pass
+    #         if delta.code_interpreter.outputs:
+    #             for output in delta.code_interpreter.outputs:
+    #                 if output.type == "logs":
+    #                     pass
 
-    @override
-    def on_tool_call_done(self, tool_call):
-        st.session_state.tool_calls.append(tool_call)
-        if tool_call.type == "code_interpreter":
-            if tool_call.id in [x.id for x in st.session_state.tool_calls]:
-                return
-            input_code = f"### code interpreter\ninput:\n```python\n{tool_call.code_interpreter.input}\n```"
-            st.session_state.current_tool_input_markdown.markdown(input_code, True)
-            st.session_state.chat_log.append({"name": "assistant", "msg": input_code})
-            st.session_state.current_tool_input_markdown = None
-            for output in tool_call.code_interpreter.outputs:
-                if output.type == "logs":
-                    output = f"### code interpreter\noutput:\n```\n{output.logs}\n```"
-                    with st.chat_message("Assistant"):
-                        st.markdown(output, True)
-                        st.session_state.chat_log.append(
-                            {"name": "assistant", "msg": output}
-                        )
-        elif (
-            tool_call.type == "function"
-            and self.current_run.status == "requires_action"
-        ):
-            with st.chat_message("Assistant"):
-                msg = f"### Function Calling: {tool_call.function.name}"
-                st.markdown(msg, True)
-                st.session_state.chat_log.append({"name": "assistant", "msg": msg})
-            tool_calls = self.current_run.required_action.submit_tool_outputs.tool_calls
-            tool_outputs = []
-            for submit_tool_call in tool_calls:
-                tool_function_name = submit_tool_call.function.name
-                tool_function_arguments = json.loads(
-                    submit_tool_call.function.arguments
-                )
-                tool_function_output = TOOL_MAP[tool_function_name](
-                    **tool_function_arguments
-                )
-                tool_outputs.append(
-                    {
-                        "tool_call_id": submit_tool_call.id,
-                        "output": tool_function_output,
-                    }
-                )
+    # @override
+    # def on_tool_call_done(self, tool_call):
+    #     st.session_state.tool_calls.append(tool_call)
+    #     if tool_call.type == "code_interpreter":
+    #         if tool_call.id in [x.id for x in st.session_state.tool_calls]:
+    #             return
+    #         input_code = f"### code interpreter\ninput:\n```python\n{tool_call.code_interpreter.input}\n```"
+    #         st.session_state.current_tool_input_markdown.markdown(input_code, True)
+    #         st.session_state.chat_log.append({"name": "assistant", "msg": input_code})
+    #         st.session_state.current_tool_input_markdown = None
+    #         for output in tool_call.code_interpreter.outputs:
+    #             if output.type == "logs":
+    #                 output = f"### code interpreter\noutput:\n```\n{output.logs}\n```"
+    #                 with st.chat_message("Assistant"):
+    #                     st.markdown(output, True)
+    #                     st.session_state.chat_log.append(
+    #                         {"name": "assistant", "msg": output}
+    #                     )
+    #     elif (
+    #         tool_call.type == "function"
+    #         and self.current_run.status == "requires_action"
+    #     ):
+    #         with st.chat_message("Assistant"):
+    #             msg = f"### Function Calling: {tool_call.function.name}"
+    #             st.markdown(msg, True)
+    #             st.session_state.chat_log.append({"name": "assistant", "msg": msg})
+    #         tool_calls = self.current_run.required_action.submit_tool_outputs.tool_calls
+    #         tool_outputs = []
+    #         for submit_tool_call in tool_calls:
+    #             tool_function_name = submit_tool_call.function.name
+    #             tool_function_arguments = json.loads(
+    #                 submit_tool_call.function.arguments
+    #             )
+    #             tool_function_output = TOOL_MAP[tool_function_name](
+    #                 **tool_function_arguments
+    #             )
+    #             tool_outputs.append(
+    #                 {
+    #                     "tool_call_id": submit_tool_call.id,
+    #                     "output": tool_function_output,
+    #                 }
+    #             )
 
-            with client.beta.threads.runs.submit_tool_outputs_stream(
-                thread_id=st.session_state.thread.id,
-                run_id=self.current_run.id,
-                tool_outputs=tool_outputs,
-                event_handler=EventHandler(),
-            ) as stream:
-                stream.until_done()
+    #         with client.beta.threads.runs.submit_tool_outputs_stream(
+    #             thread_id=st.session_state.thread.id,
+    #             run_id=self.current_run.id,
+    #             tool_outputs=tool_outputs,
+    #             event_handler=EventHandler(),
+    #         ) as stream:
+    #             stream.until_done()
 
 def generate_session_id():
     return str(uuid.uuid4())
@@ -199,7 +209,7 @@ def get_student_id(username):
 def verify_password(stored_password, provided_password):
     return stored_password == provided_password
 
-def save_chat_history(session_id, username, student_id, user_input, response):
+def save_chat_history(session_id, username, student_id, user_input, response, assistant_id, model, prompt_tokens, completion_tokens, total_tokens):
     try:
         table = airtable.table(BASE_ID, CHAT_TABLE_NAME)
         table.create({
@@ -208,7 +218,12 @@ def save_chat_history(session_id, username, student_id, user_input, response):
             "StudentID": student_id,
             "Username": username,
             "UserInput": user_input,
-            "Response": response
+            "Response": response,
+            "AssistantID" : assistant_id,
+            "Model": model,
+            "PromptTokens": prompt_tokens,
+            "CompletionTokens": completion_tokens,
+            "TotalTokens": total_tokens
         })
     except Exception as e:
         st.error(f"Error saving chat history: {str(e)}")
@@ -261,24 +276,50 @@ def format_annotation(text):
 def run_stream(user_input, file, selected_assistant_id):
     if "thread" not in st.session_state:
         st.session_state.thread = create_thread(user_input, file)
+    
     create_message(st.session_state.thread, user_input, file)
+    
+    event_handler = EventHandler()
+    
     with client.beta.threads.runs.stream(
         thread_id=st.session_state.thread.id,
         assistant_id=selected_assistant_id,
-        event_handler=EventHandler(),
+        event_handler=event_handler,
     ) as stream:
         stream.until_done()
-    
+
+    # Check if the run_id was captured
+    run_id = event_handler.run_id
+    if not run_id:
+        raise RuntimeError("Failed to retrieve run ID")
+
+    # Fetch the run details using the run_id
+    run_details = client.beta.threads.runs.retrieve(thread_id=st.session_state.thread.id, run_id=run_id)
+
+    #print(run_details)
+
+    # Extract the required details from the run object
+    assistant_id = run_details.assistant_id
+    model = run_details.model
+    prompt_tokens = run_details.usage.prompt_tokens
+    completion_tokens = run_details.usage.completion_tokens
+    total_tokens = run_details.usage.total_tokens
+
     # Save chat history after the stream is complete
     last_assistant_message = client.beta.threads.messages.list(thread_id=st.session_state.thread.id).data[0]
+    
     save_chat_history(
         st.session_state['session_id'],
         st.session_state['username'],
         get_student_id(st.session_state['username']),
         user_input,
-        last_assistant_message.content[0].text.value
+        last_assistant_message.content[0].text.value,
+        assistant_id,
+        model,
+        prompt_tokens,
+        completion_tokens,
+        total_tokens
     )
-
 
 def handle_uploaded_file(uploaded_file):
     file = client.files.create(file=uploaded_file, purpose="assistants")
@@ -416,26 +457,9 @@ def main():
         login()
     else:
         # Check if multi-agent settings are defined
-        multi_agents = os.environ.get("OPENAI_ASSISTANTS", None)
-        single_agent_id = os.environ.get("ASSISTANT_ID", None)
-        single_agent_title = os.environ.get("ASSISTANT_TITLE", "Assistants API UI")
-
-        if multi_agents:
-            assistants_json = json.loads(multi_agents)
-            assistants_object = {f'{obj["title"]}': obj for obj in assistants_json}
-            selected_assistant = st.sidebar.selectbox(
-                "Select an assistant profile?",
-                list(assistants_object.keys()),
-                index=None,
-                placeholder="Select an assistant profile...",
-                on_change=reset_chat,
-            )
-            if selected_assistant:
-                load_chat_screen(
-                    assistants_object[selected_assistant]["id"],
-                    assistants_object[selected_assistant]["title"],
-                )
-        elif single_agent_id:
+        single_agent_id = os.environ.get("OPENAI_ASSISTANTS_2", None)
+        single_agent_title = os.environ.get("OPENAI_ASSISTANTS_TITLE_2", "Assistants API UI")
+        if single_agent_id:
             load_chat_screen(single_agent_id, single_agent_title)
         else:
             st.error("No assistant configurations defined in environment variables.")
