@@ -419,17 +419,9 @@ def login():
         else:
             st.error("User not found")
 
-def logout():
-    if st.sidebar.button("Logout"):
-        st.session_state['logged_in'] = False
-        st.session_state.pop('username', None)
-        st.session_state['chat_history'] = []
-        st.success("Logged out successfully!")
-        reset_chat()
-        st.rerun()
 
 def main():
-    st.set_page_config(page_title="RevoU AI", page_icon="🤖")
+    st.set_page_config(page_title="Project Experience Crafting", page_icon="🔧")
     st.markdown(
     """
     <style>
@@ -443,8 +435,6 @@ def main():
     unsafe_allow_html=True
     )
 
-    st.set_page_config(page_title="RevoU AI Coach", page_icon="🤖")
-
     # Initialize session state
     if 'logged_in' not in st.session_state:
         st.session_state['logged_in'] = False
@@ -452,6 +442,7 @@ def main():
         st.session_state['chat_history'] = []
     if 'session_id' not in st.session_state:
         st.session_state['session_id'] = generate_session_id()
+
 
     # Sidebar for logout
     if st.session_state['logged_in']:
@@ -467,27 +458,14 @@ def main():
     if not st.session_state['logged_in']:
         login()
     else:
-        st.sidebar.success("Select Coach to chat with")
+        # Check if multi-agent settings are defined
+        single_agent_id = os.environ.get("OPENAI_ASSISTANTS_3", None)
+        single_agent_title = os.environ.get("OPENAI_ASSISTANTS_TITLE_3", "Assistants API UI")
+        if single_agent_id:
+            load_chat_screen(single_agent_id, single_agent_title)
+        else:
+            st.error("No assistant configurations defined in environment variables.")
 
-        st.markdown(
-            """
-            # Welcome to RevoU AI Coach! 👋
-            This exclusive AI Coach has been tailored to suit your needs!
-            ## How to Use
-            - For security and accuracy, external links are restricted. However, you can upload your own files.
-            - **File Upload Terms & Conditions**
-            - Please note that when you switch between assistant tabs, your chat will be closed. We recommend saving your conversations by:
-            1. Copying and pasting the chat into your notes
-            2. Downloading the chat as a PDF
-            3. Recording your screen during the chat
-            - Your usage and interaction will be monitored by RevoU. RevoU reserves the right to terminate any fraudulent activities, such as engaging in multiple sessions simultaneously.
-            - If during usage the 
-            ## Want to Learn More?
-            - 
-            ## See More Complex Demos
-            - 
-        """
-        )
 
 if __name__ == "__main__":
     main()
