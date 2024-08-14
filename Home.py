@@ -429,7 +429,7 @@ def logout():
         st.rerun()
 
 def main():
-    st.set_page_config(page_title="RevoU AI", page_icon="🤖")
+    st.set_page_config(page_title="RevoU AI Coach", page_icon="🤖")
     st.markdown(
     """
     <style>
@@ -442,8 +442,6 @@ def main():
     """,
     unsafe_allow_html=True
     )
-
-    st.set_page_config(page_title="RevoU AI Coach", page_icon="🤖")
 
     # Initialize session state
     if 'logged_in' not in st.session_state:
