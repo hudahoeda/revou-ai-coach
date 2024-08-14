@@ -515,7 +515,6 @@ def main():
         col1, col2 = st.columns(2)
 
         with col1:
-            st.header("A cat")
             st.image("https://cdn.prod.website-files.com/61af164800e38c4f53c60b4e/61af164800e38c11efc60b6d_RevoU.svg")
         
         with col2:
@@ -524,7 +523,11 @@ def main():
               2. Unduh obrolan dalam format PDF. → Print
               3. Rekam layar saat obrolan berlangsung. → Record a screencast""")
             
-        st.markdown("""* **Pengawasan:** Aktivitas dan interaksi kamu bakal dipantau oleh RevoU. Kami berhak menghentikan aktivitas yang terindikasi penipuan, termasuk menjalankan beberapa sesi bersamaan.
+        st.markdown(
+            """
+            **Pengawasan:** 
+            
+            Aktivitas dan interaksi kamu bakal dipantau oleh RevoU. Kami berhak menghentikan aktivitas yang terindikasi penipuan, termasuk menjalankan beberapa sesi bersamaan.
             
             Dengan Revo, nyiapin diri buat nyari kerja jadi kebantu banget! Yuk, mulai sekarang dan wujudkan karir impian kamu bareng kita! 🎯
 
