@@ -23,7 +23,7 @@ USER_TABLE_NAME = 'Users'
 CHAT_TABLE_NAME = 'Chat History'
 AIRTABLE_API_KEY = os.environ.get('AIRTABLE_API_KEY')
 
-selected_assistant_id = os.environ.get("OPENAI_ASSISTANTS_1")
+selected_assistant_id = os.environ.get("OPENAI_ASSISTANTS_5")
 
 # Initialize Airtable API
 try:
@@ -110,7 +110,7 @@ def handle_uploaded_file(uploaded_file):
     file = client.files.create(file=uploaded_file, purpose="assistants")
     return file
 
-def create_thread():
+def create_thread(content, file):
     return client.beta.threads.create()
 
 def create_message(thread, content, file):
@@ -145,14 +145,70 @@ def save_chat_history(session_id, username, student_id, user_input, response, as
 def generate_session_id():
     return str(uuid.uuid4())
 
-def run_stream(file):
+# def run_stream(file):
+#     if "thread" not in st.session_state:
+#         st.session_state.thread = create_thread()
+
+#     create_message(st.session_state.thread, "Tolong bantu saya review CV berikut dan berikan feedback yang komprehensif.", file)
+
+#     event_handler = EventHandler()
+
+#     with client.beta.threads.runs.stream(
+#         thread_id=st.session_state.thread.id,
+#         assistant_id=selected_assistant_id,
+#         event_handler=event_handler,
+#     ) as stream:
+#         stream.until_done()
+
+#     # Check if the run_id was captured
+#     run_id = event_handler.run_id
+#     if not run_id:
+#         raise RuntimeError("Failed to retrieve run ID")
+
+#     # Fetch the run details using the run_id
+#     run_details = client.beta.threads.runs.retrieve(thread_id=st.session_state.thread.id, run_id=run_id)
+
+#     # Extract the required details from the run object
+#     assistant_id = run_details.assistant_id
+#     model = run_details.model
+#     prompt_tokens = run_details.usage.prompt_tokens
+#     completion_tokens = run_details.usage.completion_tokens
+#     total_tokens = run_details.usage.total_tokens
+
+#     # Save chat history after the stream is complete
+#     last_assistant_message = client.beta.threads.messages.list(thread_id=st.session_state.thread.id).data[0]
+
+#     # Remove the existing chat message if it's the same as the last one (to avoid duplicates)
+#     if st.session_state.chat_log and st.session_state.chat_log[-1]["msg"] == last_assistant_message.content[0].text.value:
+#         st.session_state.chat_log.pop()
+
+#     # Append the new chat message to the chat log
+#     st.session_state.chat_log.append({
+#         "name": "assistant",
+#         "msg": last_assistant_message.content[0].text.value
+#     })
+
+#     save_chat_history(
+#         session_id = st.session_state['session_id'],
+#         username = st.session_state['username'],
+#         student_id = get_student_id(st.session_state['username']),
+#         user_input= file.filename,
+#         response = last_assistant_message.content[0].text.value,
+#         assistant_id = assistant_id,
+#         model = model,
+#         prompt_tokens = prompt_tokens,
+#         completion_tokens = completion_tokens,
+#         total_tokens = total_tokens
+#     )
+
+def run_stream(user_input, file, selected_assistant_id):
     if "thread" not in st.session_state:
-        st.session_state.thread = create_thread()
-
-    create_message(st.session_state.thread, "Tolong bantu saya review CV berikut dan berikan feedback yang komprehensif.", file)
-
+        st.session_state.thread = create_thread(user_input, file)
+    
+    create_message(st.session_state.thread, user_input, file)
+    
     event_handler = EventHandler()
-
+    
     with client.beta.threads.runs.stream(
         thread_id=st.session_state.thread.id,
         assistant_id=selected_assistant_id,
@@ -168,6 +224,8 @@ def run_stream(file):
     # Fetch the run details using the run_id
     run_details = client.beta.threads.runs.retrieve(thread_id=st.session_state.thread.id, run_id=run_id)
 
+    #print(run_details)
+
     # Extract the required details from the run object
     assistant_id = run_details.assistant_id
     model = run_details.model
@@ -177,30 +235,19 @@ def run_stream(file):
 
     # Save chat history after the stream is complete
     last_assistant_message = client.beta.threads.messages.list(thread_id=st.session_state.thread.id).data[0]
-
-    # Remove the existing chat message if it's the same as the last one (to avoid duplicates)
-    if st.session_state.chat_log and st.session_state.chat_log[-1]["msg"] == last_assistant_message.content[0].text.value:
-        st.session_state.chat_log.pop()
-
-    # Append the new chat message to the chat log
-    st.session_state.chat_log.append({
-        "name": "assistant",
-        "msg": last_assistant_message.content[0].text.value
-    })
-
+    
     save_chat_history(
-        session_id = st.session_state['session_id'],
-        username = st.session_state['username'],
-        student_id = get_student_id(st.session_state['username']),
-        user_input= file.filename,
-        response = last_assistant_message.content[0].text.value,
-        assistant_id = assistant_id,
-        model = model,
-        prompt_tokens = prompt_tokens,
-        completion_tokens = completion_tokens,
-        total_tokens = total_tokens
+        st.session_state['session_id'],
+        st.session_state['username'],
+        get_student_id(st.session_state['username']),
+        user_input,
+        last_assistant_message.content[0].text.value,
+        assistant_id,
+        model,
+        prompt_tokens,
+        completion_tokens,
+        total_tokens
     )
-
 
 def reset_chat():
     st.session_state.chat_log = []
@@ -264,6 +311,8 @@ def login():
             st.error("User not found")
 
 def main():
+    st.set_page_config(page_title="Resume Reviewer", page_icon="📄")
+    
     # Initialize session state
     if 'logged_in' not in st.session_state:
         st.session_state['logged_in'] = False
@@ -295,16 +344,17 @@ def main():
             if st.button("Submit for Review"):
                 with st.spinner("Analyzing the resume..."):
                     file = handle_uploaded_file(uploaded_file)
-                    run_stream(file)
+                    user_input = f"Tolong bantu saya review CV berikut dan berikan feedback yang komprehensif {uploaded_file.name}"
+                    run_stream(user_input,file,selected_assistant_id)
 
         if "chat_log" not in st.session_state:
             st.session_state.chat_log = []
 
-        # Render only the last chat message
-        if st.session_state.chat_log:
-            last_chat = st.session_state.chat_log[-1]
-            with st.chat_message(last_chat["name"]):
-                st.markdown(last_chat["msg"], True)
+        # # Render only the last chat message
+        # if st.session_state.chat_log:
+        #     last_chat = st.session_state.chat_log[-1]
+        #     with st.chat_message(last_chat["name"]):
+        #         st.markdown(last_chat["msg"], True)
 
 if __name__ == "__main__":
     main()

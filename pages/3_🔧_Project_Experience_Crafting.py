@@ -421,6 +421,7 @@ def login():
 
 
 def main():
+    st.set_page_config(page_title="Project Experience Crafting", page_icon="🔧")
     st.markdown(
     """
     <style>
@@ -442,6 +443,7 @@ def main():
     if 'session_id' not in st.session_state:
         st.session_state['session_id'] = generate_session_id()
 
+
     # Sidebar for logout
     if st.session_state['logged_in']:
         if st.sidebar.button("Logout"):
@@ -457,8 +459,8 @@ def main():
         login()
     else:
         # Check if multi-agent settings are defined
-        single_agent_id = os.environ.get("OPENAI_ASSISTANTS_2", None)
-        single_agent_title = os.environ.get("OPENAI_ASSISTANTS_TITLE_2", "Assistants API UI")
+        single_agent_id = os.environ.get("OPENAI_ASSISTANTS_3", None)
+        single_agent_title = os.environ.get("OPENAI_ASSISTANTS_TITLE_3", "Assistants API UI")
         if single_agent_id:
             load_chat_screen(single_agent_id, single_agent_title)
         else:

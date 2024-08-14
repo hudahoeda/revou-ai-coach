@@ -421,6 +421,7 @@ def login():
 
 
 def main():
+    st.set_page_config(page_title="Quality Application Kit", page_icon="📋")
     st.markdown(
     """
     <style>
@@ -456,8 +457,9 @@ def main():
     if not st.session_state['logged_in']:
         login()
     else:
-        single_agent_id = os.environ.get("OPENAI_ASSISTANTS_1", None)
-        single_agent_title = os.environ.get("OPENAI_ASSISTANTS_TITLE_1", "Assistants API UI")
+        # Check if multi-agent settings are defined
+        single_agent_id = os.environ.get("OPENAI_ASSISTANTS_4", None)
+        single_agent_title = os.environ.get("OPENAI_ASSISTANTS_TITLE_4", "Assistants API UI")
         if single_agent_id:
             load_chat_screen(single_agent_id, single_agent_title)
         else:
