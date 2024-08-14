@@ -182,6 +182,7 @@ class EventHandler(AssistantEventHandler):
     #         ) as stream:
     #             stream.until_done()
 
+#test commit
 def generate_session_id():
     return str(uuid.uuid4())
 
