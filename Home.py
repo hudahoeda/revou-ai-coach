@@ -524,7 +524,7 @@ def main():
               2. Unduh obrolan dalam format PDF. → Print
               3. Rekam layar saat obrolan berlangsung. → Record a screencast""")
             
-         st.markdown("""* **Pengawasan:** Aktivitas dan interaksi kamu bakal dipantau oleh RevoU. Kami berhak menghentikan aktivitas yang terindikasi penipuan, termasuk menjalankan beberapa sesi bersamaan.
+        st.markdown("""* **Pengawasan:** Aktivitas dan interaksi kamu bakal dipantau oleh RevoU. Kami berhak menghentikan aktivitas yang terindikasi penipuan, termasuk menjalankan beberapa sesi bersamaan.
             
             Dengan Revo, nyiapin diri buat nyari kerja jadi kebantu banget! Yuk, mulai sekarang dan wujudkan karir impian kamu bareng kita! 🎯
 
