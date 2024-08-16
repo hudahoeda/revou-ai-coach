@@ -420,49 +420,16 @@ def login():
             st.error("User not found")
 
 
-def main_4():
-    st.set_page_config(page_title="Quality Application Kit", page_icon="📋")
-    st.markdown(
-    """
-    <style>
-    .css-1jc7ptx, .e1ewe7hr3, .viewerBadge_container__1QSob,
-    .styles_viewerBadge__1yB5_, .viewerBadge_link__1S137,
-    .viewerBadge_text__1JaDK {
-        display: none;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-    )
-
-    # Initialize session state
-    if 'logged_in' not in st.session_state:
-        st.session_state['logged_in'] = False
-    if 'chat_history' not in st.session_state:
-        st.session_state['chat_history'] = []
-    if 'session_id' not in st.session_state:
-        st.session_state['session_id'] = generate_session_id()
-
-    # Sidebar for logout
-    if st.session_state['logged_in']:
-        if st.sidebar.button("Logout"):
-            st.session_state['logged_in'] = False
-            st.session_state.pop('username', None)
-            st.session_state['chat_history'] = []
-            st.success("Logged out successfully!")
-            reset_chat()
-            st.rerun()
-
-    # Main content
-    if not st.session_state['logged_in']:
-        login()
+# Main content
+if not st.session_state['logged_in']:
+    login()
+else:
+    # Check if multi-agent settings are defined
+    single_agent_id = os.environ.get("OPENAI_ASSISTANTS_4", None)
+    single_agent_title = os.environ.get("OPENAI_ASSISTANTS_TITLE_4", "Assistants API UI")
+    if single_agent_id:
+        load_chat_screen(single_agent_id, single_agent_title)
     else:
-        # Check if multi-agent settings are defined
-        single_agent_id = os.environ.get("OPENAI_ASSISTANTS_4", None)
-        single_agent_title = os.environ.get("OPENAI_ASSISTANTS_TITLE_4", "Assistants API UI")
-        if single_agent_id:
-            load_chat_screen(single_agent_id, single_agent_title)
-        else:
-            st.error("No assistant configurations defined in environment variables.")
+        st.error("No assistant configurations defined in environment variables.")
 
 # main_4()

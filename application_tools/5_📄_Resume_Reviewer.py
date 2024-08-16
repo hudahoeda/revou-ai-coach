@@ -310,45 +310,24 @@ def login():
         else:
             st.error("User not found")
 
-def main_5():
-    st.set_page_config(page_title="Resume Reviewer", page_icon="📄")
-    
-    # Initialize session state
-    if 'logged_in' not in st.session_state:
-        st.session_state['logged_in'] = False
-    if 'chat_history' not in st.session_state:
-        st.session_state['chat_history'] = []
-    if 'session_id' not in st.session_state:
-        st.session_state['session_id'] = generate_session_id()
+# Main content
+if not st.session_state['logged_in']:
+    login()
+else:
+    st.title("📝 Resume Reviewer")
+    uploaded_file = st.file_uploader("Upload your resume", type=["pdf", "docx", "txt"])
 
-    # Sidebar for logout
-    if st.session_state['logged_in']:
-        if st.sidebar.button("Logout"):
-            st.session_state['logged_in'] = False
-            st.session_state.pop('username', None)
-            st.session_state['chat_history'] = []
-            st.success("Logged out successfully!")
-            reset_chat()
-            st.rerun()
-    
-    # Main content
-    if not st.session_state['logged_in']:
-        login()
-    else:
-        st.title("📝 Resume Reviewer")
-        uploaded_file = st.file_uploader("Upload your resume", type=["pdf", "docx", "txt"])
+    if uploaded_file:
+        st.write("Resume uploaded successfully!")
 
-        if uploaded_file:
-            st.write("Resume uploaded successfully!")
+        if st.button("Submit for Review"):
+            with st.spinner("Analyzing the resume..."):
+                file = handle_uploaded_file(uploaded_file)
+                user_input = f"Tolong bantu saya review CV berikut dan berikan feedback yang komprehensif {uploaded_file.name}"
+                run_stream(user_input,file,selected_assistant_id)
 
-            if st.button("Submit for Review"):
-                with st.spinner("Analyzing the resume..."):
-                    file = handle_uploaded_file(uploaded_file)
-                    user_input = f"Tolong bantu saya review CV berikut dan berikan feedback yang komprehensif {uploaded_file.name}"
-                    run_stream(user_input,file,selected_assistant_id)
-
-        if "chat_log" not in st.session_state:
-            st.session_state.chat_log = []
+    if "chat_log" not in st.session_state:
+        st.session_state.chat_log = []
 
         # # Render only the last chat message
         # if st.session_state.chat_log:
