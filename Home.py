@@ -47,11 +47,11 @@ azure_openai_key = os.environ.get("AZURE_OPENAI_KEY")
 authentication_required = str_to_bool(os.environ.get("AUTHENTICATION_REQUIRED", False))
 
 # Define your pages using st.Page with actual icons
-about_me_page = st.Page("pages/1_📝_About_Me_Preparation.py", title="About Me Preparation", icon="📝")
-experience_crafting_page = st.Page("pages/2_💼_Experience_Crafting.py", title="Experience Crafting", icon="💼")
-project_experience_page = st.Page("pages/3_🔧_Project_Experience_Crafting.py", title="Project Experience Crafting", icon="🔧")
-quality_application_page = st.Page("pages/4_📋_Quality_Application_Kit.py", title="Quality Application Kit", icon="📋")
-resume_reviewer_page = st.Page("pages/5_📄_Resume_Reviewer.py", title="Resume Reviewer", icon="📄")
+about_me_page = st.Page("profile_preparation/1_📝_About_Me_Preparation.py", title="About Me Preparation", icon="📝")
+experience_crafting_page = st.Page("profile_preparation/2_💼_Experience_Crafting.py", title="Experience Crafting", icon="💼")
+project_experience_page = st.Page("profile_preparation/3_🔧_Project_Experience_Crafting.py", title="Project Experience Crafting", icon="🔧")
+quality_application_page = st.Page("application_tools/4_📋_Quality_Application_Kit.py", title="Quality Application Kit", icon="📋")
+resume_reviewer_page = st.Page("application_tools/5_📄_Resume_Reviewer.py", title="Resume Reviewer", icon="📄")
 
 # Load authentication configuration
 if authentication_required:
