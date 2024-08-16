@@ -43,14 +43,14 @@ st.markdown(
     * **Keamanan & Akurasi:** Untuk jaga-jaga, tautan eksternal bakal dibatasi. Tapi tenang aja, kamu tetap bisa unggah file sendiri sampai 200MB per file dalam format TXT atau PDF lewat tombol di sidebar kiri.
     """)
 
-st.image("https://cdn.prod.website-files.com/61af164800e38c4f53c60b4e/61af164800e38c11efc60b6d_RevoU.svg")
+st.image("assets/tutor_1.png")
     
 st.markdown(""" * **Simpan Obrolanmu:** Saat kamu pindah-pindah tab asisten, obrolan kamu otomatis bakal ditutup. Jadi, jangan lupa simpan percakapanmu dengan cara: """)
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.image("https://cdn.prod.website-files.com/61af164800e38c4f53c60b4e/61af164800e38c11efc60b6d_RevoU.svg")
+    st.image("assets/tutor_2.png")
 
 with col2:
     st.markdown("""            
