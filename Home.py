@@ -445,14 +445,13 @@ def login():
             st.error("User not found")
 
 def logout():
-    if st.sidebar.button("Logout"):
-        st.session_state['logged_in'] = False
-        st.session_state.pop('username', None)
-        st.session_state['chat_history'] = []
-        st.session_state['session_id'] = []
-        st.success("Logged out successfully!")
-        reset_chat()
-        st.rerun()
+    st.session_state['logged_in'] = False
+    st.session_state.pop('username', None)
+    st.session_state['chat_history'] = []
+    st.session_state['session_id'] = []
+    st.success("Logged out successfully!")
+    reset_chat()
+    st.rerun()
 
 def main():
     st.set_page_config(page_title="RevoU AI Coach", page_icon="🤖")
