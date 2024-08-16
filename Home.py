@@ -453,10 +453,17 @@ def logout():
     reset_chat()
     st.rerun()
 
+def get_current_page_name(pg):
+    return print(pg.title)
+
 def main():
     st.set_page_config(page_title="RevoU AI Coach", page_icon="🤖")
 
     # Initialize session state
+    if "page_thread_ids" not in st.session_state:
+        st.session_state.page_thread_ids = {}
+    if "page_chat_logs" not in st.session_state:
+        st.session_state.page_chat_logs = {}
     if 'logged_in' not in st.session_state:
         st.session_state['logged_in'] = False
     if 'chat_history' not in st.session_state:
@@ -480,6 +487,7 @@ def main():
         login()
     else:        
         pg.run()
+        get_current_page_name(pg)
         
 if __name__ == "__main__":
     main()
