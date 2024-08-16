@@ -310,7 +310,7 @@ def login():
         else:
             st.error("User not found")
 
-def main():
+def main_5():
     st.set_page_config(page_title="Resume Reviewer", page_icon="📄")
     
     # Initialize session state
@@ -356,5 +356,4 @@ def main():
         #     with st.chat_message(last_chat["name"]):
         #         st.markdown(last_chat["msg"], True)
 
-if __name__ == "__main__":
-    main()
+main_5()

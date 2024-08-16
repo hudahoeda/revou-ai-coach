@@ -420,7 +420,7 @@ def login():
             st.error("User not found")
 
 
-def main():
+def main_2():
     st.set_page_config(page_title="Experience Crafting", page_icon="💼")
     st.markdown(
     """
@@ -466,5 +466,4 @@ def main():
             st.error("No assistant configurations defined in environment variables.")
 
 
-if __name__ == "__main__":
-    main()
+main_2()
