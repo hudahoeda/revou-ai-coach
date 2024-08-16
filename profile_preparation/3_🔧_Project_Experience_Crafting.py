@@ -466,4 +466,4 @@ def main_3():
         else:
             st.error("No assistant configurations defined in environment variables.")
 
-main_3()
+# main_3()

@@ -421,49 +421,48 @@ def login():
             st.error("User not found")
 
 
-def main_1():
-    st.set_page_config(page_title="About Me Preparation", page_icon="📝")
-    st.markdown(
-    """
-    <style>
-    .css-1jc7ptx, .e1ewe7hr3, .viewerBadge_container__1QSob,
-    .styles_viewerBadge__1yB5_, .viewerBadge_link__1S137,
-    .viewerBadge_text__1JaDK {
-        display: none;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-    )
+st.set_page_config(page_title="About Me Preparation", page_icon="📝")
+st.markdown(
+"""
+<style>
+.css-1jc7ptx, .e1ewe7hr3, .viewerBadge_container__1QSob,
+.styles_viewerBadge__1yB5_, .viewerBadge_link__1S137,
+.viewerBadge_text__1JaDK {
+    display: none;
+}
+</style>
+""",
+unsafe_allow_html=True
+)
 
 
-    # Initialize session state
-    if 'logged_in' not in st.session_state:
+# Initialize session state
+if 'logged_in' not in st.session_state:
+    st.session_state['logged_in'] = False
+if 'chat_history' not in st.session_state:
+    st.session_state['chat_history'] = []
+if 'session_id' not in st.session_state:
+    st.session_state['session_id'] = generate_session_id()
+
+# Sidebar for logout
+if st.session_state['logged_in']:
+    if st.sidebar.button("Logout"):
         st.session_state['logged_in'] = False
-    if 'chat_history' not in st.session_state:
+        st.session_state.pop('username', None)
         st.session_state['chat_history'] = []
-    if 'session_id' not in st.session_state:
-        st.session_state['session_id'] = generate_session_id()
+        st.success("Logged out successfully!")
+        reset_chat()
+        st.rerun()
 
-    # Sidebar for logout
-    if st.session_state['logged_in']:
-        if st.sidebar.button("Logout"):
-            st.session_state['logged_in'] = False
-            st.session_state.pop('username', None)
-            st.session_state['chat_history'] = []
-            st.success("Logged out successfully!")
-            reset_chat()
-            st.rerun()
-
-    # Main content
-    if not st.session_state['logged_in']:
-        login()
+# Main content
+if not st.session_state['logged_in']:
+    login()
+else:
+    single_agent_id = os.environ.get("OPENAI_ASSISTANTS_1", None)
+    single_agent_title = os.environ.get("OPENAI_ASSISTANTS_TITLE_1", "Assistants API UI")
+    if single_agent_id:
+        load_chat_screen(single_agent_id, single_agent_title)
     else:
-        single_agent_id = os.environ.get("OPENAI_ASSISTANTS_1", None)
-        single_agent_title = os.environ.get("OPENAI_ASSISTANTS_TITLE_1", "Assistants API UI")
-        if single_agent_id:
-            load_chat_screen(single_agent_id, single_agent_title)
-        else:
-            st.error("No assistant configurations defined in environment variables.")
+        st.error("No assistant configurations defined in environment variables.")
 
-main_1()
+# main_1()

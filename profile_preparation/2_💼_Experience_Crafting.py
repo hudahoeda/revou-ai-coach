@@ -466,4 +466,4 @@ def main_2():
             st.error("No assistant configurations defined in environment variables.")
 
 
-main_2()
+# main_2()
