@@ -449,6 +449,7 @@ def logout():
         st.session_state['logged_in'] = False
         st.session_state.pop('username', None)
         st.session_state['chat_history'] = []
+        st.session_state['session_id'] = []
         st.success("Logged out successfully!")
         reset_chat()
         st.rerun()
