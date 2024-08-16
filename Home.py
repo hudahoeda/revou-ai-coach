@@ -46,6 +46,13 @@ azure_openai_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
 azure_openai_key = os.environ.get("AZURE_OPENAI_KEY")
 authentication_required = str_to_bool(os.environ.get("AUTHENTICATION_REQUIRED", False))
 
+# Define your pages using st.Page with actual icons
+about_me_page = st.Page("pages/1_📝_About_Me_Preparation.py", title="About Me Preparation", icon="📝")
+experience_crafting_page = st.Page("pages/2_💼_Experience_Crafting.py", title="Experience Crafting", icon="💼")
+project_experience_page = st.Page("pages/3_🔧_Project_Experience_Crafting.py", title="Project Experience Crafting", icon="🔧")
+quality_application_page = st.Page("pages/4_📋_Quality_Application_Kit.py", title="Quality Application Kit", icon="📋")
+resume_reviewer_page = st.Page("pages/5_📄_Resume_Reviewer.py", title="Resume Reviewer", icon="📄")
+
 # Load authentication configuration
 if authentication_required:
     if "credentials" in st.secrets:
@@ -430,18 +437,6 @@ def logout():
 
 def main():
     st.set_page_config(page_title="RevoU AI Coach", page_icon="🤖")
-    st.markdown(
-    """
-    <style>
-    .css-1jc7ptx, .e1ewe7hr3, .viewerBadge_container__1QSob,
-    .styles_viewerBadge__1yB5_, .viewerBadge_link__1S137,
-    .viewerBadge_text__1JaDK {
-        display: none;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-    )
 
     # Initialize session state
     if 'logged_in' not in st.session_state:
@@ -450,16 +445,16 @@ def main():
         st.session_state['chat_history'] = []
     if 'session_id' not in st.session_state:
         st.session_state['session_id'] = generate_session_id()
-
-    # Sidebar for logout
+        
+    # Organize pages into categories
     if st.session_state['logged_in']:
-        if st.sidebar.button("Logout"):
-            st.session_state['logged_in'] = False
-            st.session_state.pop('username', None)
-            st.session_state['chat_history'] = []
-            st.success("Logged out successfully!")
-            reset_chat()
-            st.rerun()
+        pg = st.navigation({
+            "Profile Preparation": [about_me_page, experience_crafting_page, project_experience_page],
+            "Application Tools": [quality_application_page, resume_reviewer_page],
+            "Account": [st.Page(logout, title="Logout", icon="🚪")]
+        })
+    else:
+        pg = st.navigation([st.Page(login, title="Login", icon="🔑")])
 
     # Main content
     if not st.session_state['logged_in']:
