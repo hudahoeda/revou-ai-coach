@@ -457,7 +457,8 @@ def get_current_page_name(pg):
     return print(pg.title)
 
 def main():
-    st.set_page_config(page_title="RevoU AI Coach", page_icon="🤖")
+    st.logo("https://cdn.prod.website-files.com/61af164800e38c4f53c60b4e/61af164800e38c11efc60b6d_RevoU.svg")
+    st.set_page_config(page_title="RevoU AI Coach")
 
     # Initialize session state
     if "page_thread_ids" not in st.session_state:
