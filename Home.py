@@ -35,7 +35,6 @@ def str_to_bool(str_input):
         return False
     return str_input.lower() == "true"
 
-
 # Load environment variables
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 instructions = os.environ.get("RUN_INSTRUCTIONS", "")
@@ -94,9 +93,10 @@ else:
     client = openai.OpenAI(api_key=openai_api_key)
 
 class EventHandler(AssistantEventHandler):
-    def __init__(self):
+    def __init__(self, thread_id):
         super().__init__()
         self.run_id = None
+        self.thread_id = thread_id
 
     @override
     def on_event(self, event):
@@ -124,10 +124,13 @@ class EventHandler(AssistantEventHandler):
     def on_text_done(self, text):
         format_text = format_annotation(text)
         st.session_state.current_markdown.markdown(format_text, True)
-        st.session_state.chat_log.append({"name": "assistant", "msg": format_text})
+        current_page = st.session_state.get('current_page', 'Unknown Page')
+        if current_page not in st.session_state.page_chat_logs:
+            st.session_state.page_chat_logs[current_page] = []
+        st.session_state.page_chat_logs[current_page].append({"name": "assistant", "msg": format_text})
         # Retrieve run_id from the last assistant message
         last_message = client.beta.threads.messages.list(
-            thread_id=st.session_state.thread.id, limit=1
+            thread_id=self.thread_id, limit=1
         ).data[0]
         if last_message.role == "assistant" and last_message.run_id:
             self.run_id = last_message.run_id
@@ -255,7 +258,12 @@ def save_chat_history(session_id, username, student_id, user_input, response, as
 
 
 def create_thread(content, file):
-    return client.beta.threads.create()
+    current_page = st.session_state.get('current_page', 'Unknown Page')
+    if current_page not in st.session_state.page_thread_ids:
+        thread = client.beta.threads.create()
+        st.session_state.page_thread_ids[current_page] = thread.id
+        st.session_state.page_chat_logs[current_page] = []
+    return client.beta.threads.retrieve(st.session_state.page_thread_ids[current_page])
 
 
 def create_message(thread, content, file):
@@ -299,15 +307,20 @@ def format_annotation(text):
 
 
 def run_stream(user_input, file, selected_assistant_id):
-    if "thread" not in st.session_state:
-        st.session_state.thread = create_thread(user_input, file)
+    current_page = st.session_state.get('current_page', 'Unknown Page')
     
-    create_message(st.session_state.thread, user_input, file)
+    if current_page not in st.session_state.page_thread_ids:
+        thread = client.beta.threads.create()
+        st.session_state.page_thread_ids[current_page] = thread.id
+    else:
+        thread = client.beta.threads.retrieve(st.session_state.page_thread_ids[current_page])
     
-    event_handler = EventHandler()
+    create_message(thread, user_input, file)
+    
+    event_handler = EventHandler(thread.id)
     
     with client.beta.threads.runs.stream(
-        thread_id=st.session_state.thread.id,
+        thread_id=thread.id,
         assistant_id=selected_assistant_id,
         event_handler=event_handler,
     ) as stream:
@@ -319,9 +332,7 @@ def run_stream(user_input, file, selected_assistant_id):
         raise RuntimeError("Failed to retrieve run ID")
 
     # Fetch the run details using the run_id
-    run_details = client.beta.threads.runs.retrieve(thread_id=st.session_state.thread.id, run_id=run_id)
-
-    #print(run_details)
+    run_details = client.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run_id)
 
     # Extract the required details from the run object
     assistant_id = run_details.assistant_id
@@ -331,8 +342,8 @@ def run_stream(user_input, file, selected_assistant_id):
     total_tokens = run_details.usage.total_tokens
 
     # Save chat history after the stream is complete
-    last_assistant_message = client.beta.threads.messages.list(thread_id=st.session_state.thread.id).data[0]
-    
+    last_assistant_message = client.beta.threads.messages.list(thread_id=thread.id).data[0]
+
     save_chat_history(
         st.session_state['session_id'],
         st.session_state['username'],
@@ -352,9 +363,11 @@ def handle_uploaded_file(uploaded_file):
 
 
 def render_chat():
-    for chat in st.session_state.chat_log:
-        with st.chat_message(chat["name"]):
-            st.markdown(chat["msg"], True)
+    current_page = st.session_state.get('current_page', 'Unknown Page')
+    if current_page in st.session_state.page_chat_logs:
+        for chat in st.session_state.page_chat_logs[current_page]:
+            with st.chat_message(chat["name"]):
+                st.markdown(chat["msg"], True)
 
 
 if "tool_call" not in st.session_state:
@@ -372,34 +385,51 @@ def disable_form():
 
 
 def reset_chat():
-    st.session_state.chat_log = []
+    current_page = st.session_state.get('current_page', 'Unknown Page')
+    if current_page in st.session_state.page_chat_logs:
+        st.session_state.page_chat_logs[current_page] = []
     st.session_state.in_progress = False
 
-
 def load_chat_screen(assistant_id, assistant_title):
-    if enabled_file_upload_message:
-        uploaded_file = st.sidebar.file_uploader(
-            enabled_file_upload_message,
-            type=[
-                "txt",
-                "pdf",
-                "json",
-            ],
-            disabled=st.session_state.in_progress,
-        )
-    else:
-        uploaded_file = None
+    current_page = st.session_state.get('current_page', 'Unknown Page')
+
+    uploaded_file = st.sidebar.file_uploader(
+        enabled_file_upload_message,
+        type=[
+            "txt",
+            "pdf",
+            "json",
+        ],
+        disabled=st.session_state.in_progress,
+    )
+
+    # Initialize chat logs and thread ID for the current page if they don't exist
+    if 'page_chat_logs' not in st.session_state:
+        st.session_state.page_chat_logs = {}
+    if 'page_thread_ids' not in st.session_state:
+        st.session_state.page_thread_ids = {}
+    
+    if current_page not in st.session_state.page_chat_logs:
+        st.session_state.page_chat_logs[current_page] = []
+    if current_page not in st.session_state.page_thread_ids:
+        thread = client.beta.threads.create()
+        st.session_state.page_thread_ids[current_page] = thread.id
 
     st.title(assistant_title if assistant_title else "")
     st.write(f"Halo, bisa perkenalkan namamu?")
+    
+    # Render existing chat for this page
+    for chat in st.session_state.page_chat_logs[current_page]:
+        with st.chat_message(chat["name"]):
+            st.markdown(chat["msg"], True)
+
     user_msg = st.chat_input(
         "Message", on_submit=disable_form, disabled=st.session_state.in_progress
     )
     if user_msg:
-        render_chat()
         with st.chat_message("user"):
             st.markdown(user_msg, True)
-        st.session_state.chat_log.append({"name": "user", "msg": user_msg})
+        st.session_state.page_chat_logs[current_page].append({"name": "user", "msg": user_msg})
 
         file = None
         if uploaded_file is not None:
@@ -408,8 +438,6 @@ def load_chat_screen(assistant_id, assistant_title):
         st.session_state.in_progress = False
         st.session_state.tool_call = None
         st.rerun()
-
-    render_chat()
 
 def login():
     st.markdown(
@@ -454,7 +482,10 @@ def logout():
     st.rerun()
 
 def get_current_page_name(pg):
-    return print(pg.title)
+    if pg and hasattr(pg, 'title'):
+        st.session_state['current_page'] = pg.title
+        return pg.title
+    return "Unknown Page"
 
 def main():
     st.logo("https://cdn.prod.website-files.com/61af164800e38c4f53c60b4e/61af164800e38c11efc60b6d_RevoU.svg")
@@ -471,8 +502,9 @@ def main():
         st.session_state['chat_history'] = []
     if 'session_id' not in st.session_state:
         st.session_state['session_id'] = generate_session_id()
+    if 'current_page' not in st.session_state:
+        st.session_state['current_page'] = "Home"
         
-    # Organize pages into categories
     if st.session_state['logged_in']:
         pg = st.navigation({
             "Home" : [message],
@@ -483,12 +515,17 @@ def main():
     else:
         pg = st.navigation([st.Page(login, title="Login", icon="🔑")])
 
+    # Set the current page in session state
+    if pg and hasattr(pg, 'title'):
+        st.session_state['current_page'] = pg.title
+    else:
+        st.session_state['current_page'] = "Unknown Page"
+
     # Main content
     if not st.session_state['logged_in']:
         login()
     else:        
         pg.run()
-        get_current_page_name(pg)
         
 if __name__ == "__main__":
     main()
