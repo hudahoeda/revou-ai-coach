@@ -66,8 +66,5 @@ else:
                 # Run the conversation
                 run_stream(user_input, file, selected_assistant_id)
 
-                # Clear the previous chat history for this page
-                st.session_state.page_chat_logs[current_page] = []
-
                 # Rerun to update the display
                 st.rerun()
