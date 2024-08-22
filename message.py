@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.success("Select Coach to chat with")
+st.success("Select Assistant to chat with")
 
 st.markdown(
     """
@@ -40,30 +40,39 @@ st.markdown(
     
     ## Ketentuan Umum
     
-    * **Keamanan & Akurasi:** Untuk jaga-jaga, tautan eksternal bakal dibatasi. Tapi tenang aja, kamu tetap bisa unggah file sendiri sampai 200MB per file dalam format TXT atau PDF lewat tombol di sidebar kiri.
+    * **Keamanan & Akurasi:**
+
+    Untuk jaga-jaga, tautan eksternal bakal dibatasi. Tapi tenang aja, kamu tetap bisa unggah file sendiri sampai 200MB per file dalam format TXT atau PDF lewat tombol di sidebar kiri.
     """)
 
 st.image("assets/tutor_1.png")
     
-st.markdown(""" * **Simpan Obrolanmu:** Saat kamu pindah-pindah tab asisten, obrolan kamu otomatis bakal ditutup. Jadi, jangan lupa simpan percakapanmu dengan cara: """)
+st.markdown(""" * **Simpan Obrolanmu:**""")           
+st.markdown("""Saat kamu berpindah tab asisten, obrolan kamu akan terpisah. 
+            Jika **"Logout"** diklik, maka seluruh obrolanmu akan otomatis ditutup. Jadi, jika butuh jangan lupa simpan percakapanmu dengan cara:""")
+st.markdown("""            
+1. **Salin & Tempel** obrolan ke catatan digital pribadimu.
+2. **Unduh obrolan** dalam format **PDF** → Klik ⋮ di kanan atas > **“Print”** > **“Save as PDF”**
+    - Hanya berlaku untuk 1 obrolan asisten
+3. **Rekam layar** saat obrolan berlangsung dalam **WebM** format → Klik ⋮ di kanan atas > **“Record a screencast”**
+    - Berlaku untuk beberapa obrolan asisten sekaligus
+    - Untuk menghentikan rekaman, klik titik tiga > **“Stop Recording”** lalu klik **“Save video to disk”** untuk menyimpan rekaman layar.
+""")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.image("assets/tutor_2.png")
+    st.image("assets/tutor_2.png", caption="Cara save chat sebagai PDF", width=200,)
 
 with col2:
-    st.markdown("""            
-        1. Salin & Tempel obrolan ke catatan pribadimu.
-        2. Unduh obrolan dalam format PDF. → Print
-        3. Rekam layar saat obrolan berlangsung. → Record a screencast""")
+    st.image("assets/tutor_3.png",caption="Cara screenrecord chat", width=200)
     
 st.markdown(
     """
-    **Pengawasan:** 
-    
-    Aktivitas dan interaksi kamu bakal dipantau oleh RevoU. Kami berhak menghentikan aktivitas yang terindikasi penipuan, termasuk menjalankan beberapa sesi bersamaan.
-    
-    Dengan Revo, nyiapin diri buat nyari kerja jadi kebantu banget! Yuk, mulai sekarang dan wujudkan karir impian kamu bareng kita! 🎯
+    * **Pengawasan:**
 
+    Aktivitas dan interaksi kamu bakal dipantau oleh RevoU. Kami berhak menghentikan aktivitas yang terindikasi penipuan, termasuk menjalankan beberapa sesi bersamaan.)""")
+    
+st.markdown("""
+            Dengan Revo, nyiapin diri buat nyari kerja jadi kebantu banget! Yuk, mulai sekarang dan wujudkan karir impian kamu bareng kita! 🎯
     """)

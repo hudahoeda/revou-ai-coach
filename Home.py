@@ -58,16 +58,17 @@ experience_crafting_page = st.Page("profile_preparation/2_💼_Experience_Crafti
                                    title="Experience Crafting", 
                                    icon="💼")
 
-project_experience_page = st.Page("profile_preparation/3_🔧_Project_Experience_Crafting.py", 
-                                  title="Project Experience Crafting", 
-                                  icon="🔧")
+project_experience_page = st.Page("application_tools/3_📋_Professional_Communication_Kit.py", 
+                                  title="Professional Communication Kit", 
+                                  icon="📱")
 
-quality_application_page = st.Page("application_tools/4_📋_Quality_Application_Kit.py", 
-                                   title="Quality Application Kit", 
+quality_application_page = st.Page("application_tools/4_📋_Asset_Personalization_Kit.py", 
+                                   title="Asset Personalization Kit", 
                                    icon="📋")
-resume_reviewer_page = st.Page("application_tools/5_📄_Resume_Reviewer.py", 
-                               title="Resume Reviewer", 
-                               icon="📄")
+
+# resume_reviewer_page = st.Page("application_tools/5_📄_Resume_Reviewer.py", 
+#                                title="Resume Reviewer", 
+#                                icon="📄")
 
 
 # Load authentication configuration
@@ -508,8 +509,8 @@ def main():
     if st.session_state['logged_in']:
         pg = st.navigation({
             "Home" : [message],
-            "Profile Preparation": [about_me_page, experience_crafting_page, project_experience_page],
-            "Application Tools": [quality_application_page, resume_reviewer_page],
+            "Profile Preparation": [about_me_page, experience_crafting_page],
+            "Application Tools": [quality_application_page, project_experience_page], #resume_reviewer_page],
             "Account": [st.Page(logout, title="Logout", icon="🚪")]
         })
     else:
