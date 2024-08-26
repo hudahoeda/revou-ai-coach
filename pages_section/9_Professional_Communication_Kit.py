@@ -7,8 +7,8 @@ if 'logged_in' not in st.session_state or not st.session_state['logged_in']:
     login()
 else:
     current_page = st.session_state.get('current_page', 'Unknown Page')
-    single_agent_id = os.environ.get("OPENAI_ASSISTANTS_3", None)
-    single_agent_title = os.environ.get("OPENAI_ASSISTANTS_TITLE_3", "Assistants API UI")
+    single_agent_id = os.environ.get("OPENAI_ASSISTANTS_9", None)
+    single_agent_title = os.environ.get("OPENAI_ASSISTANTS_TITLE_9", "Assistants API UI")
     if single_agent_id:
         load_chat_screen(single_agent_id, single_agent_title)
     else:
@@ -19,8 +19,3 @@ else:
         st.session_state.page_chat_logs = {}
     if current_page not in st.session_state.page_chat_logs:
         st.session_state.page_chat_logs[current_page] = []
-
-    # # Render the chat for this page
-    # for chat in st.session_state.page_chat_logs[current_page]:
-    #     with st.chat_message(chat["name"]):
-    #         st.markdown(chat["msg"], True)
