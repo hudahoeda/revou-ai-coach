@@ -19,8 +19,3 @@ else:
         st.session_state.page_chat_logs = {}
     if current_page not in st.session_state.page_chat_logs:
         st.session_state.page_chat_logs[current_page] = []
-
-    # # Render the chat for this page
-    # for chat in st.session_state.page_chat_logs[current_page]:
-    #     with st.chat_message(chat["name"]):
-    #         st.markdown(chat["msg"], True)

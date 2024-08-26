@@ -50,25 +50,41 @@ message = st.Page("message.py",
                   title="Message", 
                   icon="💬")
 
-about_me_page = st.Page("profile_preparation/1_📝_About_Me_Preparation.py", 
-                        title="About Me Preparation", 
+professional_value_dicoveries = st.Page("pages_section/1_Professional_Value_Discoveries.py", 
+                        title="Professional Value Discoveries", 
                         icon="📝")
 
-experience_crafting_page = st.Page("profile_preparation/2_💼_Experience_Crafting.py", 
-                                   title="Experience Crafting", 
+relevance_experiences_discovery = st.Page("pages_section/2_Relevance_Experiences_Discovery.py", 
+                                   title="Relevance Experiences Discovery", 
                                    icon="💼")
 
-project_experience_page = st.Page("application_tools/3_📋_Professional_Communication_Kit.py", 
-                                  title="Professional Communication Kit", 
+achievement_and_impact_discovery = st.Page("pages_section/3_Achievement_and_Impact_Discovery.py", 
+                                  title="Achievement and Impact Discovery", 
                                   icon="📱")
 
-quality_application_page = st.Page("application_tools/4_📋_Asset_Personalization_Kit.py", 
+about_me_summary_crafting = st.Page("pages_section/4_About_Me_Summary_Crafting.py", 
                                    title="Asset Personalization Kit", 
                                    icon="📋")
 
-# resume_reviewer_page = st.Page("application_tools/5_📄_Resume_Reviewer.py", 
-#                                title="Resume Reviewer", 
-#                                icon="📄")
+professionals_and_organizational_experience_crafting = st.Page("pages_section/5_Professionals_and_Organizational_Experience_Crafting.py", 
+                                                        title="Professionals and Organizational Experience Crafting", 
+                                                        icon="📋")
+
+project_crafting = st.Page("pages_section/6_Project_Crafting.py",
+                           title="Project Crafting",
+                           icon="🔧")
+
+CV_reviewer = st.Page("pages_section/7_CV_Reviewer.py",
+                        title="CV Reviewer",
+                        icon="📄")
+
+assets_personalization_kit = st.Page("pages_section/8_Assets_Personalization_Kit.py",
+                                     title="Assets Personalization Kit",
+                                     icon="📋")
+
+professional_communication_kit = st.Page("pages_section/9_Professional_Communication_Kit.py",
+                                        title="Professional Communication Kit",
+                                        icon="📋")
 
 
 # Load authentication configuration
@@ -509,9 +525,10 @@ def main():
     if st.session_state['logged_in']:
         pg = st.navigation({
             "Home" : [message],
-            "Profile Preparation": [about_me_page, experience_crafting_page],
-            "Application Tools": [quality_application_page, project_experience_page], #resume_reviewer_page],
-            "Account": [st.Page(logout, title="Logout", icon="🚪")]
+            "Personal Branding Discovery": [professional_value_dicoveries, relevance_experiences_discovery,achievement_and_impact_discovery],
+            "Assets Content Crafting": [about_me_summary_crafting, professionals_and_organizational_experience_crafting, project_crafting, CV_reviewer ],
+            "Quality Application Support": [assets_personalization_kit,professional_communication_kit],
+            "Logout": [st.Page(logout, title="Logout", icon="🚪")]
         })
     else:
         pg = st.navigation([st.Page(login, title="Login", icon="🔑")])
