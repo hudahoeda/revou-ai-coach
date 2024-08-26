@@ -58,15 +58,15 @@ relevance_experiences_discovery = st.Page("pages_section/2_Relevance_Experiences
                                    title="Relevance Experiences Discovery", 
                                    icon="💼")
 
-achievement_and_impact_discovery = st.Page("pages_section/3_Achievement_and_Impact_Discovery.py", 
-                                  title="Achievement and Impact Discovery", 
+experience_detail_discovery = st.Page("pages_section/3_Experience_Detail_Discovery.py", 
+                                  title="Experience Detail Discovery", 
                                   icon="📱")
 
-about_me_summary_crafting = st.Page("pages_section/4_About_Me_Summary_Crafting.py", 
-                                   title="Asset Personalization Kit", 
+about_me_summary_crafting = st.Page("pages_section/5_About_Me_Summary_Crafting.py", 
+                                   title="About Me Preparation", 
                                    icon="📋")
 
-professionals_and_organizational_experience_crafting = st.Page("pages_section/5_Professionals_and_Organizational_Experience_Crafting.py", 
+professionals_and_organizational_experience_crafting = st.Page("pages_section/4_Professionals_and_Organizational_Experience_Crafting.py", 
                                                         title="Professionals and Organizational Experience Crafting", 
                                                         icon="📋")
 
@@ -433,6 +433,7 @@ def load_chat_screen(assistant_id, assistant_title):
         st.session_state.page_thread_ids[current_page] = thread.id
 
     st.title(assistant_title if assistant_title else "")
+    st.success("Placeholder untuk cara penggunaan assistant")
     st.write(f"Halo, bisa perkenalkan namamu?")
     
     # Render existing chat for this page
@@ -525,7 +526,7 @@ def main():
     if st.session_state['logged_in']:
         pg = st.navigation({
             "Home" : [message],
-            "Personal Branding Discovery": [professional_value_dicoveries, relevance_experiences_discovery,achievement_and_impact_discovery],
+            "Personal Branding Discovery": [professional_value_dicoveries, relevance_experiences_discovery,experience_detail_discovery],
             "Assets Content Crafting": [about_me_summary_crafting, professionals_and_organizational_experience_crafting, project_crafting, CV_reviewer ],
             "Quality Application Support": [assets_personalization_kit,professional_communication_kit],
             "Logout": [st.Page(logout, title="Logout", icon="🚪")]

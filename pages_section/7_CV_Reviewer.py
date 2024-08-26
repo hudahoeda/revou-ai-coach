@@ -3,6 +3,7 @@ import os
 from Home import handle_uploaded_file, run_stream, client
 
 st.title("📄 Resume Reviewer")
+st.success("Placeholder untuk cara penggunaan assistant")
 
 # Get the current page name
 current_page = "Resume Reviewer"
@@ -28,7 +29,7 @@ if current_page not in st.session_state.page_chat_logs or not st.session_state.p
                 user_input = f"Tolong bantu saya review CV berikut dan berikan feedback yang komprehensif {uploaded_file.name}"
                 
                 # Get the assistant ID from environment variables
-                selected_assistant_id = os.environ.get("OPENAI_ASSISTANTS_5")
+                selected_assistant_id = os.environ.get("OPENAI_ASSISTANTS_7")
                 
                 # Run the conversation
                 run_stream(user_input, file, selected_assistant_id)
@@ -61,7 +62,7 @@ else:
                 user_input = f"Tolong bantu saya review CV berikut dan berikan feedback yang komprehensif {new_uploaded_file.name}"
                 
                 # Get the assistant ID from environment variables
-                selected_assistant_id = os.environ.get("OPENAI_ASSISTANTS_5")
+                selected_assistant_id = os.environ.get("OPENAI_ASSISTANTS_7")
                 
                 # Run the conversation
                 run_stream(user_input, file, selected_assistant_id)

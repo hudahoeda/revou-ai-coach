@@ -7,8 +7,8 @@ if 'logged_in' not in st.session_state or not st.session_state['logged_in']:
     login()
 else:
     current_page = st.session_state.get('current_page', 'Unknown Page')
-    single_agent_id = os.environ.get("OPENAI_ASSISTANTS_3", None)
-    single_agent_title = os.environ.get("OPENAI_ASSISTANTS_TITLE_3", "Assistants API UI")
+    single_agent_id = os.environ.get("OPENAI_ASSISTANTS_5", None)
+    single_agent_title = os.environ.get("OPENAI_ASSISTANTS_TITLE_5", "Assistants API UI")
     if single_agent_id:
         load_chat_screen(single_agent_id, single_agent_title)
     else:
