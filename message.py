@@ -1,43 +1,63 @@
 import streamlit as st
 
-st.success("Select Assistant to chat with")
+st.success("Pahami untuk menentukan asisten yang sesuai dengan kebutuhanmu!")
 
 st.markdown(
     """
-    ## Selamat Datang di RevoU AI Coach! 👋
+    ## Selamat datang di RevoU AI Coach! 👋
 
-    Perkenalkan aku Revo, AI Coach eksklusif yang udah dirancang khusus dengan mengikuti best practices RevoU. AI Coach terbagi menjadi beberapa asisten yang bisa kamu pilih untuk memenuhi kebutuhan kamu, jadi persiapan menuju pekerjaan impian bakal lebih gampang dan terarah!
+    Perkenalkan aku Revo, AI Coach eksklusif yang udah dirancang khusus dengan mengikuti best practices RevoU. AI Coach terbagi menjadi beberapa asisten yang terbagi dalam 3 kategori utama dan bisa kamu pilih untuk memenuhi kebutuhan kamu, jadi persiapan menuju pekerjaan impian bakal lebih gampang dan terarah!
     
     ## Asisten Sesuai Kebutuhanmu
-    
-    1. **📝 About Me Preparation:** 
-        - **🧐 Apa ini?:** Asisten ini bakal bantu kamu buat kenal nilai, kekuatan utama, sampai tujuan karir biar bikin bagian “About Me” atau Ringkasan yang efektif dan menarik untuk CV kamu.
-        - **💡 Cara Pakainya:** Cukup jawab beberapa pertanyaan simpel dari kita, dan asisten ini bakal ngerangkum jawaban kamu jadi profil yang menonjol.
-    
-    2. **💼 Experience Crafting:** 
-        - **🧐 Apa ini?:** Bingung gimana ceritain pengalaman kerja kamu? Asisten ini siap bantu kamu susun pengalaman kerja yang jelas dan pas banget buat posisi yang kamu incar.
-        - **💡 Cara Pakainya:** Kasih tau info tentang pekerjaan sebelumnya, dan asisten ini bakal bantu kamu susun pengalaman kerja yang menarik dan relevan.
-    
-    3. **🔧 Project Experience Crafting:**  
-        - **🧐 Apa ini?:** Pernah ikut proyek keren? Asisten ini bakal bantu kamu nulis pengalaman proyek itu biar kelihatan lebih profesional dan nyambung dengan kerjaan yang kamu mau.
-        - **💡 Cara Pakainya:** Ceritain aja proyek yang pernah kamu kerjain, dan kita bantu kamu tulis dengan cara yang tepat.
-    
-    4. **📋 Quality Application Kit:**
-        - **🧐 Apa ini?:** Pastikan semua dokumen aplikasi kamu udah top! Asisten ini bakal bantu cek dan perbaiki kesalahan di CV, surat lamaran, sampai portofolio kamu.
-        - **💡 Cara Pakainya:** Upload dokumen kamu, dan asisten ini bakal kasih saran perbaikan atau langsung bantu benerin otomatis.
-    
-    5. **📄 Resume Reviewer:** 
-        - **🧐 Apa ini?:** Dapetin feedback buat CV atau resume kamu dari asisten ini, biar kamu yakin resume kamu udah siap tempur.
-        - **💡 Cara Pakainya:** Kirim CT ATS kamu, dan asisten ini bakal kasih review mendalam plus saran biar lebih bagus.
-    
+
+    ## A. Personal Branding Discovery
+
+    Cocok buat kamu yang butuh memahami dan menonjolkan pengalaman relevan untuk membangun personal branding yang kuat.
+
+    ### 1. 💼 Relevant Experiences Discovery
+    * 🧐 **Apa ini?**: Asisten ini bakal bantu kamu mengidentifikasi dan mencatat semua pengalaman relevan yang kamu punya. Ini bakal ngebantu kamu paham skill apa yang bisa kamu angkat lebih tinggi.
+    * 💡 **Cara Pakainya**: Cukup jawab beberapa pertanyaan tentang pengalaman kamu, dan asisten ini bakal kasih insight tentang skill yang bisa kamu tonjolkan.
+
+    ### 2. 📱 Experience Detail Discovery
+    * 🧐 **Apa ini?**: Asisten ini bakal bantu kamu mendalami detail dari pengalaman yang kamu punya, biar bisa kamu pakai sebagai aset personal branding dan info penting buat interview.
+    * 💡 **Cara Pakainya**: Ceritakan pengalamanmu, dan asisten ini bakal bantu kamu menggali detail penting yang bisa jadi nilai tambah.
+
+    ## B. Assets Content Crafting
+
+    Ideal buat kamu yang butuh panduan menyusun dan memperbaiki konten aplikasi kerja agar sesuai standar RevoU.
+
+    ### 1. 📋 About Me Preparation
+    * 🧐 **Apa ini?**: Asisten ini siap bantu kamu menyusun dan memperbaiki bagian "About Me" biar sesuai standar RevoU dan menarik perhatian.
+    * 💡 **Cara Pakainya**: Jawab beberapa pertanyaan, dan asisten ini bakal bantu kamu bikin "About Me" yang kuat dan sesuai standar.
+
+    ### 2. 📋 Professional and Organizational Experience Crafting
+    * 🧐 **Apa ini?**: Asisten ini bantu kamu menyusun dan memperbaiki pengalaman profesional dan organisasi kamu, supaya sesuai dengan standar RevoU.
+    * 💡 **Cara Pakainya**: Berikan detail pengalaman kerja dan organisasi kamu, dan asisten ini bakal bantu kamu menulisnya dengan baik.
+
+    ### 3. 🔧 Project Crafting
+    * 🧐 **Apa ini?**: Asisten ini bantu kamu menyusun dan memperbaiki pengalaman proyek kamu, supaya terlihat profesional dan sesuai standar RevoU.
+    * 💡 **Cara Pakainya**: Ceritakan proyek yang pernah kamu kerjakan, dan asisten ini akan bantu kamu merangkumnya dengan baik.
+
+    ## C. Quality Application Support
+
+    Tepat buat kamu yang butuh memastikan aplikasi dan komunikasimu terlihat profesional dan terpersonalisasi.
+
+    ### 1. 📋 Assets Personalization
+    * 🧐 **Apa ini?**: Asisten ini bantu kamu mempersonalisasi dokumen aplikasi (seperti CV ATS) sesuai dengan lowongan pekerjaan tertentu, biar aplikasi kamu lebih stand out.
+    * 💡 **Cara Pakainya**: Upload CV ATS kamu, dan asisten ini bakal kasih saran personalisasi untuk tiap posisi yang kamu incar.
+
+    ### 2. ✉️ Professional Communication
+    * 🧐 **Apa ini?**: Asisten ini bantu kamu menyusun cover letter dan pesan lainnya dengan nada profesional, supaya komunikasi kamu terlihat berkualitas tinggi.
+    * 💡 **Cara Pakainya**: Tulis pesan atau cover letter yang ingin kamu kirim, dan asisten ini bakal bantu kamu menyusunnya dengan nada profesional yang tepat.
+
     ## Cara Pakai Platform ini
-    
-    1. Login pakai Username dan Password yang diberikan RevoU
+
+    1. Login pakai Username dan Password yang diberikan RevoU.
     2. Pilih Asisten yang paling pas buat kebutuhan kamu.
     3. Ikuti Panduannya. Setiap langkah udah didesain biar kamu bisa selesaiin dengan cepat dan tepat.
     4. Tinjau Hasilnya dan sesuaikan kalau masih kurang puas.
     5. Simpan dan Gunakan hasil akhirnya buat aplikasi kerja nyata kamu.
-    
+
     ## Ketentuan Umum
     
     * **Keamanan & Akurasi:**
@@ -48,8 +68,7 @@ st.markdown(
 st.image("assets/tutor_1.png")
     
 st.markdown(""" * **Simpan Obrolanmu:**""")           
-st.markdown("""Saat kamu berpindah tab asisten, obrolan kamu akan terpisah. 
-            Jika **"Logout"** diklik, maka seluruh obrolanmu akan otomatis ditutup. Jadi, jika butuh jangan lupa simpan percakapanmu dengan cara:""")
+st.markdown("""* Simpan Obrolanmu: Saat kamu berpindah tab asisten, obrolan kamu akan terpisah. Jika **Logout** diklik, maka seluruh obrolanmu akan otomatis ditutup. Jadi, jika butuh jangan lupa simpan percakapanmu dengan cara:""")
 st.markdown("""            
 1. **Salin & Tempel** obrolan ke catatan digital pribadimu.
 2. **Unduh obrolan** dalam format **PDF** → Klik ⋮ di kanan atas > **“Print”** > **“Save as PDF”**
