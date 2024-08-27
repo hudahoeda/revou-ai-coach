@@ -407,7 +407,7 @@ def reset_chat():
         st.session_state.page_chat_logs[current_page] = []
     st.session_state.in_progress = False
 
-def load_chat_screen(assistant_id, assistant_title):
+def load_chat_screen(assistant_id, assistant_title,assistant_message):
     current_page = st.session_state.get('current_page', 'Unknown Page')
 
     uploaded_file = st.sidebar.file_uploader(
@@ -433,7 +433,7 @@ def load_chat_screen(assistant_id, assistant_title):
         st.session_state.page_thread_ids[current_page] = thread.id
 
     st.title(assistant_title if assistant_title else "")
-    st.success("Placeholder untuk cara penggunaan assistant")
+    st.info(assistant_message)
     st.write(f"Halo, bisa perkenalkan namamu?")
     
     # Render existing chat for this page
@@ -529,7 +529,7 @@ def main():
         pg = st.navigation({
             "Home" : [message],
             "Personal Branding Discovery": [relevance_experiences_discovery,experience_detail_discovery],
-            "Assets Content Crafting": [about_me_summary_crafting, professionals_and_organizational_experience_crafting, project_crafting, CV_reviewer ],
+            "Assets Content Crafting": [about_me_summary_crafting, professionals_and_organizational_experience_crafting, project_crafting],
             "Quality Application Support": [assets_personalization_kit,professional_communication_kit],
             "Logout": [st.Page(logout, title="Logout", icon="🚪")]
         })

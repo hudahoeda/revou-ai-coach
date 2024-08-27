@@ -2,6 +2,8 @@ import os
 import streamlit as st
 from Home import load_chat_screen, login
 
+assistant_message = "hello wold!"
+
 # Main content
 if 'logged_in' not in st.session_state or not st.session_state['logged_in']:
     login()
@@ -10,7 +12,7 @@ else:
     single_agent_id = os.environ.get("OPENAI_ASSISTANTS_1", None)
     single_agent_title = os.environ.get("OPENAI_ASSISTANTS_TITLE_1", "Assistants API UI")
     if single_agent_id:
-        load_chat_screen(single_agent_id, single_agent_title)
+        load_chat_screen(single_agent_id, single_agent_title, assistant_message)
     else:
         st.error(f"No assistant configuration defined for {current_page}")
 
