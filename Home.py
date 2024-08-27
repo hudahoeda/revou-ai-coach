@@ -433,7 +433,7 @@ def load_chat_screen(assistant_id, assistant_title,assistant_message):
         st.session_state.page_thread_ids[current_page] = thread.id
 
     st.title(assistant_title if assistant_title else "")
-    st.success(assistant_message)
+    st.info(assistant_message)
     st.write(f"Halo, bisa perkenalkan namamu?")
     
     # Render existing chat for this page
