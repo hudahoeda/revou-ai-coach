@@ -2,7 +2,7 @@ import os
 import streamlit as st
 from Home import load_chat_screen, login
 
-assistant_message = "Apa ini?: Asisten ini bakal bantu kamu mengidentifikasi dan mencatat semua pengalaman relevan yang kamu punya. Ini bakal ngebantu kamu paham skill apa yang bisa kamu angkat lebih tinggi. \n Cara Pakainya: Cukup jawab beberapa pertanyaan tentang pengalaman kamu, dan asisten ini bakal kasih insight tentang skill yang bisa kamu tonjolkan."
+assistant_message = "Apa ini?: Asisten ini bakal bantu kamu mendalami detail dari pengalaman yang kamu punya, biar bisa kamu pakai sebagai aset personal branding dan info penting buat interview. Cara Pakainya: Ceritakan pengalamanmu, dan asisten ini bakal bantu kamu menggali detail penting yang bisa jadi nilai tambah."
 
 
 # Main content
