@@ -4,7 +4,7 @@ st.success("Pahami untuk menentukan asisten yang sesuai dengan kebutuhanmu!")
 
 st.markdown(
     """
-    ## Selamat datang di RevoU AI Coach! 👋
+    ## Selamat datang di Revo AI Coach! 👋
 
     Perkenalkan aku Revo, AI Coach eksklusif yang udah dirancang khusus dengan mengikuti best practices RevoU. AI Coach terbagi menjadi beberapa asisten yang terbagi dalam 3 kategori utama dan bisa kamu pilih untuk memenuhi kebutuhan kamu, jadi persiapan menuju pekerjaan impian bakal lebih gampang dan terarah!
     

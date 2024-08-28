@@ -470,7 +470,7 @@ def login():
     """,
     unsafe_allow_html=True
     )
-    st.title("💬 RevoU AI Coach")
+    st.title("💬 Revo AI Coach")
     st.text("Enter your credential")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
@@ -509,7 +509,7 @@ def get_current_page_name(pg):
 
 def main():
     st.logo("https://cdn.prod.website-files.com/61af164800e38c4f53c60b4e/61af164800e38c11efc60b6d_RevoU.svg")
-    st.set_page_config(page_title="RevoU AI Coach")
+    st.set_page_config(page_title="Revo AI Coach")
 
     # Initialize session state
     if "page_thread_ids" not in st.session_state:
