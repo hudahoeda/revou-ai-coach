@@ -2,7 +2,7 @@ import os
 import streamlit as st
 from Home import load_chat_screen, login
 
-assistant_message = "Apa ini?: Asisten ini bantu kamu menyusun dan memperbaiki pengalaman profesional dan organisasi kamu, supaya sesuai dengan standar RevoU. Cara Pakainya: Berikan detail pengalaman kerja dan organisasi kamu, dan asisten ini bakal bantu kamu menulisnya dengan baik."
+assistant_message = "Asisten ini bantu kamu menyusun dan memperbaiki pengalaman profesional dan organisasi kamu, supaya sesuai dengan standar RevoU. Berikan detail pengalaman kerja dan organisasi kamu, dan asisten ini bakal bantu kamu menulisnya dengan baik."
 
 # Main content
 if 'logged_in' not in st.session_state or not st.session_state['logged_in']:

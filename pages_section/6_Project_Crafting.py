@@ -2,7 +2,7 @@ import os
 import streamlit as st
 from Home import load_chat_screen, login
 
-assistant_message =   "Apa ini?: Asisten ini bantu kamu menyusun dan memperbaiki pengalaman proyek kamu, supaya terlihat profesional dan sesuai standar RevoU. Cara Pakainya: Ceritakan proyek yang pernah kamu kerjakan, dan asisten ini akan bantu kamu merangkumnya dengan baik."
+assistant_message =   "Asisten ini bantu kamu menyusun dan memperbaiki pengalaman proyek kamu, supaya terlihat profesional dan sesuai standar RevoU. Ceritakan proyek yang pernah kamu kerjakan, dan asisten ini akan bantu kamu merangkumnya dengan baik."
 
 
 # Main content
