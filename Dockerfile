@@ -17,4 +17,4 @@ COPY . /app
 
 ENTRYPOINT ["streamlit", "run"]
 
-CMD ["app.py"]
+CMD ["Home.py"]
