@@ -256,7 +256,10 @@ def verify_password(stored_password, provided_password):
 
 def save_chat_history(session_id, username, student_id, user_input, response, assistant_id, model, prompt_tokens, completion_tokens, total_tokens):
     try:
+        st.info("Attempting to save chat history...")
         table = airtable.table(BASE_ID, CHAT_TABLE_NAME)
+        st.info("Airtable table object created successfully.")
+        
         table.create({
             "SessionID": session_id,
             "Timestamp": int(time.time()),
@@ -270,6 +273,9 @@ def save_chat_history(session_id, username, student_id, user_input, response, as
             "CompletionTokens": completion_tokens,
             "TotalTokens": total_tokens
         })
+        
+        st.success("Chat history saved successfully.")
+        
     except Exception as e:
         st.error(f"Error saving chat history: {str(e)}")
 
@@ -324,55 +330,70 @@ def format_annotation(text):
 
 
 def run_stream(user_input, file, selected_assistant_id):
-    current_page = st.session_state.get('current_page', 'Unknown Page')
-    
-    if current_page not in st.session_state.page_thread_ids:
-        thread = client.beta.threads.create()
-        st.session_state.page_thread_ids[current_page] = thread.id
-    else:
-        thread = client.beta.threads.retrieve(st.session_state.page_thread_ids[current_page])
-    
-    create_message(thread, user_input, file)
-    
-    event_handler = EventHandler(thread.id)
-    
-    with client.beta.threads.runs.stream(
-        thread_id=thread.id,
-        assistant_id=selected_assistant_id,
-        event_handler=event_handler,
-    ) as stream:
-        stream.until_done()
+    try:
+        st.info("Running stream function...")
+        current_page = st.session_state.get('current_page', 'Unknown Page')
+        
+        if current_page not in st.session_state.page_thread_ids:
+            st.info("Creating new thread...")
+            thread = client.beta.threads.create()
+            st.session_state.page_thread_ids[current_page] = thread.id
+            st.success(f"Thread created with ID: {thread.id}")
+        else:
+            thread = client.beta.threads.retrieve(st.session_state.page_thread_ids[current_page])
+            st.success(f"Retrieved existing thread with ID: {thread.id}")
+        
+        create_message(thread, user_input, file)
+        st.info("Message created in the thread.")
+        
+        event_handler = EventHandler(thread.id)
+        
+        with client.beta.threads.runs.stream(
+            thread_id=thread.id,
+            assistant_id=selected_assistant_id,
+            event_handler=event_handler,
+        ) as stream:
+            st.info("Streaming assistant response...")
+            stream.until_done()
+            st.success("Stream completed.")
 
-    # Check if the run_id was captured
-    run_id = event_handler.run_id
-    if not run_id:
-        raise RuntimeError("Failed to retrieve run ID")
+        # Check if the run_id was captured
+        run_id = event_handler.run_id
+        if not run_id:
+            raise RuntimeError("Failed to retrieve run ID")
+        st.success(f"Run ID retrieved: {run_id}")
 
-    # Fetch the run details using the run_id
-    run_details = client.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run_id)
+        # Fetch the run details using the run_id
+        run_details = client.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run_id)
+        st.info("Run details retrieved.")
 
-    # Extract the required details from the run object
-    assistant_id = run_details.assistant_id
-    model = run_details.model
-    prompt_tokens = run_details.usage.prompt_tokens
-    completion_tokens = run_details.usage.completion_tokens
-    total_tokens = run_details.usage.total_tokens
+        # Extract the required details from the run object
+        assistant_id = run_details.assistant_id
+        model = run_details.model
+        prompt_tokens = run_details.usage.prompt_tokens
+        completion_tokens = run_details.usage.completion_tokens
+        total_tokens = run_details.usage.total_tokens
+        st.info(f"Model: {model}, Tokens used: {total_tokens}")
 
-    # Save chat history after the stream is complete
-    last_assistant_message = client.beta.threads.messages.list(thread_id=thread.id).data[0]
+        # Save chat history after the stream is complete
+        last_assistant_message = client.beta.threads.messages.list(thread_id=thread.id).data[0]
+        st.info("Fetched last assistant message.")
 
-    save_chat_history(
-        st.session_state['session_id'],
-        st.session_state['username'],
-        get_student_id(st.session_state['username']),
-        user_input,
-        last_assistant_message.content[0].text.value,
-        assistant_id,
-        model,
-        prompt_tokens,
-        completion_tokens,
-        total_tokens
-    )
+        save_chat_history(
+            st.session_state['session_id'],
+            st.session_state['username'],
+            get_student_id(st.session_state['username']),
+            user_input,
+            last_assistant_message.content[0].text.value,
+            assistant_id,
+            model,
+            prompt_tokens,
+            completion_tokens,
+            total_tokens
+        )
+        
+    except Exception as e:
+        st.error(f"Error during run_stream function: {str(e)}")
 
 def handle_uploaded_file(uploaded_file):
     file = client.files.create(file=uploaded_file, purpose="assistants")
