@@ -260,7 +260,8 @@ def save_chat_history(session_id, username, student_id, user_input, response, as
         table = airtable.table(BASE_ID, CHAT_TABLE_NAME)
         st.info("Airtable table object created successfully.")
         
-        table.create({
+        # Print data being sent to Airtable for debugging
+        data = {
             "SessionID": session_id,
             "Timestamp": int(time.time()),
             "StudentID": student_id,
@@ -272,12 +273,18 @@ def save_chat_history(session_id, username, student_id, user_input, response, as
             "PromptTokens": prompt_tokens,
             "CompletionTokens": completion_tokens,
             "TotalTokens": total_tokens
-        })
+        }
+
+        st.info(f"Data being sent to Airtable: {data}")
+
+        # Attempt to create the record
+        table.create(data)
         
         st.success("Chat history saved successfully.")
         
     except Exception as e:
         st.error(f"Error saving chat history: {str(e)}")
+
 
 
 def create_thread(content, file):
