@@ -525,7 +525,6 @@ def load_flowise_chat_screen(api_url, headers, assistant_title, assistant_messag
         st.session_state.page_chat_logs[current_page].append({"name": "user", "msg": user_msg})
 
         # Custom API response
-        st.write("Asking Flowise via custom API...")
         response_json = generate_custom_api_response(api_url, headers, user_msg)
         
         if response_json:
