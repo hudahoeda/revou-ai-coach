@@ -465,27 +465,23 @@ def load_chat_screen(assistant_id, assistant_title,assistant_message):
 def generate_custom_api_response(api_url, headers, question, session_id=None):
     # Create the payload for the API request
     payload = {
-        "chatflowId": session_id,  # If it's the first request, session_id should be None
         "question": question,
-        "streaming": True  # Assuming the API supports streaming, else you can remove this
+        "streaming": False  # Assuming the API supports streaming, else you can remove this
     }
     
-    # Remove sessionId from payload if it's the first request (since it will be None)
+    # Send the sessionId if available, otherwise leave it out for the first request
     if session_id:
         payload["sessionId"] = session_id
 
     # Send the request to the custom API endpoint
-    response = requests.post(api_url, json=payload, headers=headers, stream=True)
+    response = requests.post(api_url, json=payload, headers=headers)
 
+    # Return the response content as JSON if status is 200 OK
     if response.status_code == 200:
-        session_id = None
-        for chunk in response.iter_lines():
-            if chunk:
-                data = chunk.decode('utf-8')
-                yield data, response.headers.get('sessionId')  # Extract the sessionId from headers or response
+        return response.json()
     else:
         st.error(f"Error {response.status_code}: {response.text}")
-        yield None, None
+        return None
 
 # Function to load the chat interface and handle Flowise API interaction
 def load_flowise_chat_screen(api_url, headers, assistant_title, assistant_message):
@@ -524,25 +520,34 @@ def load_flowise_chat_screen(api_url, headers, assistant_title, assistant_messag
             st.markdown(user_msg, True)
         st.session_state.page_chat_logs[current_page].append({"name": "user", "msg": user_msg})
 
-        # Fetch the session ID from state if it exists
+        # Fetch the session ID from state if it exists, else leave it None
         session_id = st.session_state.get('flowise_session_id', None)
 
-        # Custom API streaming response
+        # Custom API response
         st.write("Asking Flowise via custom API...")
-        response_stream = generate_custom_api_response(api_url, headers, user_msg, session_id)
+        response_json = generate_custom_api_response(api_url, headers, user_msg, session_id)
         
-        # Process the response stream
-        for chunk, new_session_id in response_stream:
-            if new_session_id and 'flowise_session_id' not in st.session_state:
-                st.session_state['flowise_session_id'] = new_session_id  # Store the session ID after the first response
+        if response_json:
+            # Extract the sessionId and store it in the session state for future messages
+            if 'sessionId' in response_json:
+                st.session_state['flowise_session_id'] = response_json['sessionId']
 
+            # Extract the text from the response and display it
+            flowise_reply = response_json.get('text', "No response received.")
             with st.chat_message("Flowise"):
-                st.markdown(chunk, True)  # Display each chunk received from the API
-            st.session_state.page_chat_logs[current_page].append({"name": "Flowise", "msg": chunk})
-        
+                st.markdown(flowise_reply, True)
+            st.session_state.page_chat_logs[current_page].append({"name": "Flowise", "msg": flowise_reply})
+            
+            # Optionally, extract and display additional information (e.g., sourceDocuments)
+            if 'sourceDocuments' in response_json:
+                st.write("Source Documents:")
+                for doc in response_json['sourceDocuments']:
+                    st.write(f"- Page {doc['metadata']['loc']['pageNumber']}: {doc['pageContent']}")
+
         # Reset the progress state
         st.session_state.in_progress = False
         st.rerun()  # Refresh the page to display new chat message
+
 
 def login():
     st.markdown(
