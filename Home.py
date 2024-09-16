@@ -13,6 +13,7 @@ import streamlit_authenticator as stauth
 from pyairtable import Api
 import time
 import uuid
+from flowise import Flowise, PredictionData
 
 # Add these to your existing environment variable loading
 BASE_ID = os.environ.get('BASE_ID')
@@ -49,6 +50,10 @@ authentication_required = str_to_bool(os.environ.get("AUTHENTICATION_REQUIRED", 
 message = st.Page("message.py", 
                   title="Message", 
                   icon="💬")
+
+flowise = st.Page("pages_section/10_Flowise_Testing.py", 
+                        title="Flowise Testing", 
+                        icon="📝")
 
 professional_value_dicoveries = st.Page("pages_section/1_Professional_Value_Discoveries.py", 
                         title="Professional Value Discoveries", 
@@ -456,6 +461,74 @@ def load_chat_screen(assistant_id, assistant_title,assistant_message):
         st.session_state.in_progress = False
         st.session_state.tool_call = None
         st.rerun()
+        
+def load_flowise_chat_screen(flowise_chatflow_id, assistant_title, assistant_message):
+    current_page = st.session_state.get('current_page', 'Flowise Chat')
+
+    # Ensure session ID is initialized globally and reused across all pages
+    if 'session_id' not in st.session_state or not st.session_state['session_id']:
+        st.session_state['session_id'] = str(uuid.uuid4())  # Use a new uuid4 session ID if not initialized
+
+    # File uploader (optional, depending on your use case)
+    uploaded_file = st.sidebar.file_uploader(
+        "Upload a file if needed (txt, pdf, json)",  # Adjust the message as needed
+        type=["txt", "pdf", "json"],
+        disabled=st.session_state.get('in_progress', False),
+    )
+
+    # Initialize chat logs for the current page if they don't exist
+    if 'page_chat_logs' not in st.session_state:
+        st.session_state.page_chat_logs = {}
+
+    if current_page not in st.session_state.page_chat_logs:
+        st.session_state.page_chat_logs[current_page] = []
+
+    st.title(assistant_title if assistant_title else "")
+    st.info(assistant_message)
+    st.write("Halo, bisa perkenalkan namamu?")  # Initial greeting message
+    
+    # Render existing chat for this page
+    for chat in st.session_state.page_chat_logs[current_page]:
+        with st.chat_message(chat["name"]):
+            st.markdown(chat["msg"], True)
+
+    user_msg = st.chat_input(
+        "Message", on_submit=None, disabled=st.session_state.get('in_progress', False)
+    )
+    
+    if user_msg:
+        # Display the user message
+        with st.chat_message("user"):
+            st.markdown(user_msg, True)
+        st.session_state.page_chat_logs[current_page].append({"name": "user", "msg": user_msg})
+
+        # Optional: Handle uploaded file (depending on your use case)
+        file = None
+        if uploaded_file is not None:
+            file = handle_uploaded_file(uploaded_file)  # Assuming handle_uploaded_file is defined
+        
+        # Flowise streaming response
+        st.write("Asking Flowise...")
+        client = Flowise()  # Initialize Flowise client
+        response_stream = client.create_prediction(
+            PredictionData(
+                chatflowId=flowise_chatflow_id,  # Flowise chatflow ID
+                question=user_msg,
+                sessionId=st.session_state['session_id'],  # Use the global session ID
+                streaming=True
+            )
+        )
+        
+        # Process the response stream
+        for chunk in response_stream:
+            response_message = chunk['data']  # Adjust this if the structure of chunk differs
+            with st.chat_message("Flowise"):
+                st.markdown(response_message, True)
+            st.session_state.page_chat_logs[current_page].append({"name": "Flowise", "msg": response_message})
+        
+        # Reset the progress state
+        st.session_state.in_progress = False
+        st.rerun()  # Refresh the page to display new chat message
 
 def login():
     st.markdown(
@@ -528,7 +601,7 @@ def main():
     if st.session_state['logged_in']:
         pg = st.navigation({
             "Home" : [message],
-            "Personal Branding Discovery": [relevance_experiences_discovery,experience_detail_discovery],
+            "Personal Branding Discovery": [flowise, relevance_experiences_discovery,experience_detail_discovery],
             "Assets Content Crafting": [about_me_summary_crafting, professionals_and_organizational_experience_crafting, project_crafting],
             "Quality Application Support": [assets_personalization_kit,professional_communication_kit],
             "Logout": [st.Page(logout, title="Logout", icon="🚪")]
