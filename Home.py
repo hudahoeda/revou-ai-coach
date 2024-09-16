@@ -462,16 +462,18 @@ def load_chat_screen(assistant_id, assistant_title,assistant_message):
         st.session_state.tool_call = None
         st.rerun()
         
-def generate_custom_api_response(api_url, headers, question, session_id=None):
+def generate_custom_api_response(api_url, headers, question):
+    # Retrieve the session ID directly from the session state
+    session_id = st.session_state.get('flowise_session_id', None)
+
     # Create the payload for the API request
     payload = {
         "question": question,
-        "streaming": False  # Assuming the API supports streaming, else you can remove this
+        "streaming": False,  # Assuming the API supports streaming
+        "overrideConfig": {
+            "sessionId": session_id  # Directly use the session ID from session state
+        }
     }
-    
-    # Send the sessionId if available, otherwise leave it out for the first request
-    if session_id:
-        payload["sessionId"] = session_id
 
     # Send the request to the custom API endpoint
     response = requests.post(api_url, json=payload, headers=headers)
@@ -483,18 +485,20 @@ def generate_custom_api_response(api_url, headers, question, session_id=None):
         st.error(f"Error {response.status_code}: {response.text}")
         return None
 
-# Function to load the chat interface and handle Flowise API interaction
 def load_flowise_chat_screen(api_url, headers, assistant_title, assistant_message):
     current_page = st.session_state.get('current_page', 'Flowise Chat')
 
-    # File uploader (optional, depending on your use case)
+    if 'in_progress' not in st.session_state:
+        st.session_state.in_progress = False
+    if 'flowise_session_id' not in st.session_state:
+        st.session_state.flowise_session_id = None  # Initialize session ID as None if not present
+
     uploaded_file = st.sidebar.file_uploader(
-        "Upload a file if needed (txt, pdf, json)",  # Adjust the message as needed
+        "Upload a file if needed (txt, pdf, json)",  
         type=["txt", "pdf", "json"],
-        disabled=st.session_state.get('in_progress', False),
+        disabled=st.session_state.in_progress,
     )
 
-    # Initialize chat logs for the current page if they don't exist
     if 'page_chat_logs' not in st.session_state:
         st.session_state.page_chat_logs = {}
 
@@ -503,50 +507,44 @@ def load_flowise_chat_screen(api_url, headers, assistant_title, assistant_messag
 
     st.title(assistant_title if assistant_title else "")
     st.info(assistant_message)
-    st.write("Halo, bisa perkenalkan namamu?")  # Initial greeting message
+    st.write("Halo, bisa perkenalkan namamu?")  
     
-    # Render existing chat for this page
     for chat in st.session_state.page_chat_logs[current_page]:
         with st.chat_message(chat["name"]):
             st.markdown(chat["msg"], True)
 
     user_msg = st.chat_input(
-        "Message", on_submit=None, disabled=st.session_state.get('in_progress', False)
+        "Message", on_submit=None, disabled=st.session_state.in_progress
     )
     
     if user_msg:
-        # Display the user message
+        st.session_state.in_progress = True
+
         with st.chat_message("user"):
             st.markdown(user_msg, True)
         st.session_state.page_chat_logs[current_page].append({"name": "user", "msg": user_msg})
 
-        # Fetch the session ID from state if it exists, else leave it None
-        session_id = st.session_state.get('flowise_session_id', None)
-
         # Custom API response
         st.write("Asking Flowise via custom API...")
-        response_json = generate_custom_api_response(api_url, headers, user_msg, session_id)
+        response_json = generate_custom_api_response(api_url, headers, user_msg)
         
         if response_json:
-            # Extract the sessionId and store it in the session state for future messages
-            if 'sessionId' in response_json:
+            st.write(f"Current sessionId in session state: {st.session_state['flowise_session_id']}")
+
+            # Update session state with sessionId if not already present
+            if 'sessionId' in response_json and st.session_state['flowise_session_id'] is None:
                 st.session_state['flowise_session_id'] = response_json['sessionId']
 
-            # Extract the text from the response and display it
+            st.write(f"Updated sessionId after response: {st.session_state['flowise_session_id']}")
+
             flowise_reply = response_json.get('text', "No response received.")
             with st.chat_message("Flowise"):
                 st.markdown(flowise_reply, True)
             st.session_state.page_chat_logs[current_page].append({"name": "Flowise", "msg": flowise_reply})
-            
-            # Optionally, extract and display additional information (e.g., sourceDocuments)
-            if 'sourceDocuments' in response_json:
-                st.write("Source Documents:")
-                for doc in response_json['sourceDocuments']:
-                    st.write(f"- Page {doc['metadata']['loc']['pageNumber']}: {doc['pageContent']}")
 
-        # Reset the progress state
         st.session_state.in_progress = False
-        st.rerun()  # Refresh the page to display new chat message
+        st.rerun()
+
 
 
 def login():
