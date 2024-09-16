@@ -14,7 +14,7 @@ from pyairtable import Api
 import time
 import uuid
 from flowise import Flowise, PredictionData
-
+import requests
 # Add these to your existing environment variable loading
 BASE_ID = os.environ.get('BASE_ID')
 USER_TABLE_NAME = 'Users'
@@ -462,12 +462,34 @@ def load_chat_screen(assistant_id, assistant_title,assistant_message):
         st.session_state.tool_call = None
         st.rerun()
         
-def load_flowise_chat_screen(flowise_chatflow_id, assistant_title, assistant_message):
-    current_page = st.session_state.get('current_page', 'Flowise Chat')
+def generate_custom_api_response(api_url, headers, question, session_id=None):
+    # Create the payload for the API request
+    payload = {
+        "chatflowId": session_id,  # If it's the first request, session_id should be None
+        "question": question,
+        "streaming": True  # Assuming the API supports streaming, else you can remove this
+    }
+    
+    # Remove sessionId from payload if it's the first request (since it will be None)
+    if session_id:
+        payload["sessionId"] = session_id
 
-    # Ensure session ID is initialized globally and reused across all pages
-    if 'session_id' not in st.session_state or not st.session_state['session_id']:
-        st.session_state['session_id'] = str(uuid.uuid4())  # Use a new uuid4 session ID if not initialized
+    # Send the request to the custom API endpoint
+    response = requests.post(api_url, json=payload, headers=headers, stream=True)
+
+    if response.status_code == 200:
+        session_id = None
+        for chunk in response.iter_lines():
+            if chunk:
+                data = chunk.decode('utf-8')
+                yield data, response.headers.get('sessionId')  # Extract the sessionId from headers or response
+    else:
+        st.error(f"Error {response.status_code}: {response.text}")
+        yield None, None
+
+# Function to load the chat interface and handle Flowise API interaction
+def load_flowise_chat_screen(api_url, headers, assistant_title, assistant_message):
+    current_page = st.session_state.get('current_page', 'Flowise Chat')
 
     # File uploader (optional, depending on your use case)
     uploaded_file = st.sidebar.file_uploader(
@@ -502,29 +524,21 @@ def load_flowise_chat_screen(flowise_chatflow_id, assistant_title, assistant_mes
             st.markdown(user_msg, True)
         st.session_state.page_chat_logs[current_page].append({"name": "user", "msg": user_msg})
 
-        # Optional: Handle uploaded file (depending on your use case)
-        file = None
-        if uploaded_file is not None:
-            file = handle_uploaded_file(uploaded_file)  # Assuming handle_uploaded_file is defined
-        
-        # Flowise streaming response
-        st.write("Asking Flowise...")
-        client = Flowise()  # Initialize Flowise client
-        response_stream = client.create_prediction(
-            PredictionData(
-                chatflowId=flowise_chatflow_id,  # Flowise chatflow ID
-                question=user_msg,
-                sessionId=st.session_state['session_id'],  # Use the global session ID
-                streaming=True
-            )
-        )
+        # Fetch the session ID from state if it exists
+        session_id = st.session_state.get('flowise_session_id', None)
+
+        # Custom API streaming response
+        st.write("Asking Flowise via custom API...")
+        response_stream = generate_custom_api_response(api_url, headers, user_msg, session_id)
         
         # Process the response stream
-        for chunk in response_stream:
-            response_message = chunk['data']  # Adjust this if the structure of chunk differs
+        for chunk, new_session_id in response_stream:
+            if new_session_id and 'flowise_session_id' not in st.session_state:
+                st.session_state['flowise_session_id'] = new_session_id  # Store the session ID after the first response
+
             with st.chat_message("Flowise"):
-                st.markdown(response_message, True)
-            st.session_state.page_chat_logs[current_page].append({"name": "Flowise", "msg": response_message})
+                st.markdown(chunk, True)  # Display each chunk received from the API
+            st.session_state.page_chat_logs[current_page].append({"name": "Flowise", "msg": chunk})
         
         # Reset the progress state
         st.session_state.in_progress = False
