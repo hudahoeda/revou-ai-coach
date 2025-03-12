@@ -433,6 +433,7 @@ def load_chat_screen(assistant_id, assistant_title,assistant_message):
         st.session_state.page_thread_ids[current_page] = thread.id
 
     st.title(assistant_title if assistant_title else "")
+    st.info('We are going to sunset the service on 17th March 2025, thank you for using our service!')
     st.info(assistant_message)
     st.write(f"Halo, bisa perkenalkan namamu?")
     
@@ -510,6 +511,7 @@ def get_current_page_name(pg):
 def main():
     st.logo("https://cdn.prod.website-files.com/61af164800e38c4f53c60b4e/61af164800e38c11efc60b6d_RevoU.svg")
     st.set_page_config(page_title="Revo AI Coach")
+    st.info('We are going to sunset the service on 17th March 2025, thank you for using our service!')
 
     # Initialize session state
     if "page_thread_ids" not in st.session_state:
